@@ -194,7 +194,7 @@ class TowerDefenseGame extends Phaser.Scene {
         this.towerButtons.push(this.createTowerButton(startX + (buttonWidth + buttonSpacing) * 3, buttonY, 'Upgrade ($30)', 'upgradeTower', 30));
 
         // Create start wave button container
-        const startWaveContainer = this.add.container(1050, 760);
+        const startWaveContainer = this.add.container(1100, 755);
 
         // Add button shadow
         const startWaveShadow = this.add.rectangle(2, 2, 120, 50, 0x000000, 0.3)
@@ -484,7 +484,7 @@ class TowerDefenseGame extends Phaser.Scene {
 
         // Draw path with increased width
         const graphics = this.add.graphics();
-        graphics.lineStyle(60, 0x8b4513, 0.8);
+        graphics.lineStyle(60, 0x8b4513, 1.0);
         graphics.beginPath();
         graphics.moveTo(this.path[0].x, this.path[0].y);
         for (let i = 1; i < this.path.length; i++) {
