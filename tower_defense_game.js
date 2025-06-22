@@ -324,20 +324,14 @@ class TowerDefenseGame extends Phaser.Scene {
                     duration: 100,
                     ease: 'Power2'
                 });
+            } else {
+                button.setFillStyle(0x7f8c8d);
+                button.setAlpha(0.7);
             }
         });
 
         button.on('pointerout', () => {
-            if (!button.selectionIndicator.visible) {
-                button.setFillStyle(0x3498db);
-                this.tweens.add({
-                    targets: button,
-                    scaleX: 1,
-                    scaleY: 1,
-                    duration: 100,
-                    ease: 'Power2'
-                });
-            }
+            this.updateButtonState(button);
         });
 
         // Add press effect
@@ -797,7 +791,6 @@ class TowerDefenseGame extends Phaser.Scene {
             this.towers.add(tower);
             this.money -= towerConfig.cost;
             this.towersBuilt++;
-            this.updateUI();
         }
     }
 
@@ -909,6 +902,8 @@ class TowerDefenseGame extends Phaser.Scene {
         if (this.health <= 0) {
             this.endGame();
         }
+
+        this.updateUI();
     }
 
     moveEnemy(enemy, delta) {
@@ -917,7 +912,6 @@ class TowerDefenseGame extends Phaser.Scene {
             this.health -= 10;
             enemy.healthBar.destroy();
             enemy.destroy();
-            this.updateUI();
             return;
         }
 
@@ -985,7 +979,6 @@ class TowerDefenseGame extends Phaser.Scene {
                     this.enemiesDefeated++;
                     bullet.target.healthBar.destroy();
                     bullet.target.destroy();
-                    this.updateUI();
                 }
                 bullet.destroy();
             }
@@ -997,7 +990,6 @@ class TowerDefenseGame extends Phaser.Scene {
         
         this.waveActive = true;
         this.spawnTimer.paused = false;
-        this.updateUI();
     }
 
     endWave() {
@@ -1011,7 +1003,6 @@ class TowerDefenseGame extends Phaser.Scene {
         this.wave++;
         this.enemiesInWave = 7 + (this.wave - 1) * 2;
         this.enemiesSpawned = 0;
-        this.updateUI();
     }
 
     upgradeTower() {
@@ -1034,8 +1025,6 @@ class TowerDefenseGame extends Phaser.Scene {
             this.selectedTower.rangeGraphics.lineStyle(1, 0xffffff, 0.3);
             this.selectedTower.rangeGraphics.strokeCircle(this.selectedTower.x, this.selectedTower.y, this.selectedTower.range);
         }
-
-        this.updateUI();
     }
 
     createUpgradeEffect(x, y) {
@@ -1061,13 +1050,6 @@ class TowerDefenseGame extends Phaser.Scene {
         this.moneyText.setText(`Money: ${this.money}`);
         this.waveText.setText(`Wave: ${this.wave}`);
         this.enemiesText.setText(`Enemies: ${this.enemiesInWave - this.enemiesSpawned}`);
-
-        // Update button states based on current money
-        this.towers.children.entries.forEach(tower => {
-            if (tower.cost) {
-                this.updateButtonState(tower);
-            }
-        });
     }
 }
 
