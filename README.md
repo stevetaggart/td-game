@@ -10,7 +10,7 @@ A browser-based tower defense game built with Phaser.js.
    cd td_game
    ```
 
-2. **Start the server:**
+2. **Start the server in a terminal:**
    ```bash
    python3 -m http.server 8000
    ```
@@ -40,6 +40,5 @@ Defend against waves of enemies by strategically placing and upgrading towers. D
 
 - Multiple tower types with different strategies
 - Wave-based progression with increasing difficulty
-- Boss enemies on wave 10
 - Tower upgrade system
 - Visual effects and animations 
