@@ -1,0 +1,41 @@
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tower base (square foundation) -->
+  <rect x="2" y="2" width="36" height="36" fill="#5a5a52" stroke="#3a3a32" stroke-width="2"/>
+  
+  <!-- Inner tower platform -->
+  <rect x="6" y="6" width="28" height="28" fill="#6b6b5b" stroke="#4a4a3a" stroke-width="1"/>
+  
+  <!-- Central tower structure -->
+  <rect x="10" y="10" width="20" height="20" fill="#7a7a6a" stroke="#5a5a4a" stroke-width="1"/>
+  
+  <!-- Inner core -->
+  <rect x="14" y="14" width="12" height="12" fill="#8a8a72" stroke="#6a6a52" stroke-width="1"/>
+  
+  <!-- Corner battlements with warm stone color -->
+  <rect x="6" y="6" width="4" height="4" fill="#8b7355" stroke="#6b5335" stroke-width="1"/>
+  <rect x="30" y="6" width="4" height="4" fill="#8b7355" stroke="#6b5335" stroke-width="1"/>
+  <rect x="6" y="30" width="4" height="4" fill="#8b7355" stroke="#6b5335" stroke-width="1"/>
+  <rect x="30" y="30" width="4" height="4" fill="#8b7355" stroke="#6b5335" stroke-width="1"/>
+  
+  <!-- Arrow slits/windows on each side -->
+  <rect x="19" y="10" width="2" height="4" fill="#2a2a1a"/>
+  <rect x="19" y="26" width="2" height="4" fill="#2a2a1a"/>
+  <rect x="10" y="19" width="4" height="2" fill="#2a2a1a"/>
+  <rect x="26" y="19" width="4" height="2" fill="#2a2a1a"/>
+  
+  <!-- Central targeting post with bronze color -->
+  <circle cx="20" cy="20" r="3" fill="#cd7f32" stroke="#ad5f12" stroke-width="1"/>
+  <circle cx="20" cy="20" r="1" fill="#4a3a2a"/>
+  
+  <!-- Wall detail lines with subtle brown tint -->
+  <rect x="10" y="12" width="20" height="1" fill="#7a6a5a"/>
+  <rect x="10" y="27" width="20" height="1" fill="#7a6a5a"/>
+  <rect x="12" y="10" width="1" height="20" fill="#7a6a5a"/>
+  <rect x="27" y="10" width="1" height="20" fill="#7a6a5a"/>
+  
+  <!-- Small decorative elements on corners -->
+  <circle cx="8" cy="8" r="1" fill="#cd7f32"/>
+  <circle cx="32" cy="8" r="1" fill="#cd7f32"/>
+  <circle cx="8" cy="32" r="1" fill="#cd7f32"/>
+  <circle cx="32" cy="32" r="1" fill="#cd7f32"/>
+</svg>

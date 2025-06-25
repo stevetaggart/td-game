@@ -5,48 +5,20 @@ class TowerDefenseGame extends Phaser.Scene {
 
     preload() {
         // Load the correct image for each tower type
-        this.load.image('basicTower', 'tower_topdown_40x40.png');
-        this.load.image('rapidTower', 'rapid_tower_topdown_40x40.png');
-        this.load.image('cannonTower', 'canon_tower_topdown_40x40.png');
-        this.createEnemySprites();
+        this.load.image('basicTower', 'basic_tower_topdown_40x40.svg');
+        this.load.image('rapidTower', 'rapid_tower_topdown_40x40.svg');
+        this.load.image('cannonTower', 'canon_tower_topdown_40x40.svg');
+        
+        // Load the enemy path SVG
+        this.load.image('enemyPath', 'enemy_path_no_bg.svg');
+        
+        // Load enemy sprites
+        this.load.image('enemy', 'enemy_basic.svg');
+        this.load.image('strongEnemy', 'enemy_strong.svg');
+        
         this.createBulletSprites();
         this.createGhostTowerSprites();
         this.createPlacementIndicators();
-    }
-
-    createEnemySprites() {
-        // Basic Enemy
-        const graphics1 = this.add.graphics();
-        graphics1.fillStyle(0x2c3e50);
-        graphics1.fillCircle(16, 20, 12);
-        graphics1.fillStyle(0xe74c3c);
-        graphics1.fillCircle(16, 16, 10);
-        graphics1.fillStyle(0xffffff);
-        graphics1.fillCircle(12, 14, 2);
-        graphics1.fillCircle(20, 14, 2);
-        graphics1.fillStyle(0x2c3e50);
-        graphics1.fillRect(12, 18, 8, 2);
-        graphics1.generateTexture('enemy', 32, 32);
-        graphics1.destroy();
-
-        // Strong Enemy (appears in later waves)
-        const graphics2 = this.add.graphics();
-        graphics2.fillStyle(0x8b4513);
-        graphics2.fillCircle(18, 22, 14);
-        graphics2.fillStyle(0x27ae60);
-        graphics2.fillCircle(18, 18, 12);
-        graphics2.fillStyle(0xffffff);
-        graphics2.fillCircle(14, 16, 2);
-        graphics2.fillCircle(22, 16, 2);
-        graphics2.fillStyle(0x2c3e50);
-        graphics2.fillRect(14, 20, 8, 2);
-        // Spikes
-        graphics2.fillStyle(0x95a5a6);
-        graphics2.fillRect(8, 12, 4, 4);
-        graphics2.fillRect(24, 12, 4, 4);
-        graphics2.fillRect(16, 8, 4, 4);
-        graphics2.generateTexture('strongEnemy', 36, 36);
-        graphics2.destroy();
     }
 
     createBulletSprites() {
@@ -445,7 +417,7 @@ class TowerDefenseGame extends Phaser.Scene {
 
     create() {
         this.health = 100;
-        this.money = 30;
+        this.money = 300;
         this.wave = 1;
         this.enemiesInWave = 7;
         this.enemiesSpawned = 0;
@@ -476,15 +448,8 @@ class TowerDefenseGame extends Phaser.Scene {
             { x: 1200, y: 200 }
         ];
 
-        // Draw path with increased width
-        const graphics = this.add.graphics();
-        graphics.lineStyle(60, 0x8b4513, 1.0);
-        graphics.beginPath();
-        graphics.moveTo(this.path[0].x, this.path[0].y);
-        for (let i = 1; i < this.path.length; i++) {
-            graphics.lineTo(this.path[i].x, this.path[i].y);
-        }
-        graphics.strokePath();
+        // Add the enemy path SVG image instead of drawing with graphics
+        this.add.image(600, 400, 'enemyPath').setOrigin(0.5);
 
         // Create groups
         this.towers = this.add.group();
@@ -883,8 +848,9 @@ class TowerDefenseGame extends Phaser.Scene {
             this.moveEnemy(enemy, delta);
         });
 
-        // Tower shooting
+        // Update tower rotations and shooting
         this.towers.children.entries.forEach(tower => {
+            this.updateTowerRotation(tower);
             this.towerShoot(tower, time);
         });
 
@@ -939,6 +905,15 @@ class TowerDefenseGame extends Phaser.Scene {
 
         if (enemiesInRange.length > 0) {
             const target = enemiesInRange[0];
+            
+            // Rotate rapid and cannon towers to face the enemy
+            if (tower.towerType === 'rapidTower' || tower.towerType === 'cannonTower') {
+                const angleToTarget = Phaser.Math.Angle.Between(tower.x, tower.y, target.x, target.y);
+                // Convert angle to degrees and rotate the sprite
+                const angleInDegrees = Phaser.Math.RadToDeg(angleToTarget);
+                tower.setRotation(angleToTarget);
+            }
+            
             const bulletTexture = tower.towerType === 'cannonTower' ? 'cannonBall' : 'bullet';
             const bullet = this.add.sprite(tower.x, tower.y, bulletTexture);
             bullet.damage = tower.damage;
@@ -953,6 +928,23 @@ class TowerDefenseGame extends Phaser.Scene {
             this.bullets.add(bullet);
             tower.lastFired = time;
         }
+    }
+
+    updateTowerRotation(tower) {
+        // Only rotate rapid and cannon towers
+        if (tower.towerType !== 'rapidTower' && tower.towerType !== 'cannonTower') {
+            return;
+        }
+
+        const enemiesInRange = this.enemies.children.entries.filter(enemy => 
+            Phaser.Math.Distance.Between(tower.x, tower.y, enemy.x, enemy.y) <= tower.range
+        );
+
+        if (enemiesInRange.length > 0) {
+            const target = enemiesInRange[0];
+            const angleToTarget = Phaser.Math.Angle.Between(tower.x, tower.y, target.x, target.y);
+            tower.setRotation(angleToTarget);
+        } 
     }
 
     moveBullet(bullet, delta) {
