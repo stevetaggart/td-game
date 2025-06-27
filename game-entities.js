@@ -132,7 +132,7 @@ class Tower extends Phaser.GameObjects.Sprite {
 }
 
 // Enemy Class
-class Enemy extends Phaser.GameObjects.Sprite {
+class Enemy extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, enemyType, wave) {
         const config = GameConfig.ENEMIES[enemyType];
         super(scene, x, y, config.spriteKey);
@@ -161,6 +161,7 @@ class Enemy extends Phaser.GameObjects.Sprite {
         
         // Add to scene
         scene.add.existing(this);
+        scene.physics.add.existing(this);
     }
 
     updateHealthBar() {
@@ -292,7 +293,7 @@ class Enemy extends Phaser.GameObjects.Sprite {
 }
 
 // Bullet Class
-class Bullet extends Phaser.GameObjects.Sprite {
+class Bullet extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, target, damage, range, texture) {
         super(scene, x, y, texture);
         
@@ -311,6 +312,9 @@ class Bullet extends Phaser.GameObjects.Sprite {
         
         // Add to scene
         scene.add.existing(this);
+        scene.physics.add.existing(this);
+        // Set velocity toward target
+        this.body.setVelocity(this.dirX * this.speed, this.dirY * this.speed);
     }
 
     move(delta) {
@@ -318,42 +322,26 @@ class Bullet extends Phaser.GameObjects.Sprite {
             this.destroy();
             return false;
         }
-        
-        const moveDistance = (this.speed * delta) / 1000;
-        this.x += this.dirX * moveDistance;
-        this.y += this.dirY * moveDistance;
-        
+        // Remove manual movement, let physics handle it
         const traveled = Phaser.Math.Distance.Between(this.startX, this.startY, this.x, this.y);
         if (traveled > this.range) {
             this.destroy();
             return false;
         }
-        
-        // Check collision with target
-        if (this.target && this.target.active) {
-            const enemyRadius = (this.target.displayWidth || 32) / 2;
-            const hitDist = Phaser.Math.Distance.Between(this.x, this.y, this.target.x, this.target.y);
-            
-            if (hitDist < enemyRadius) {
-                const killed = this.target.takeDamage(this.damage);
-                
-                if (killed) {
-                    // Create death effect using effects manager
-                    if (this.scene.effectsManager) {
-                        if (this.target.isBoss) {
-                            this.scene.effectsManager.createBossDeathEffect(this.target.x, this.target.y);
-                        } else {
-                            this.scene.effectsManager.createDeathEffect(this.target.x, this.target.y);
-                        }
-                    }
-                }
-                
-                this.destroy();
-                return false;
+        return true; // Bullet still active
+    }
+
+    onHitEnemy(enemy) {
+        if (!enemy.active) return;
+        const killed = enemy.takeDamage(this.damage);
+        if (killed && this.scene.effectsManager) {
+            if (enemy.isBoss) {
+                this.scene.effectsManager.createBossDeathEffect(enemy.x, enemy.y);
+            } else {
+                this.scene.effectsManager.createDeathEffect(enemy.x, enemy.y);
             }
         }
-        
-        return true; // Bullet still active
+        this.destroy();
     }
 }
 

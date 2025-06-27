@@ -118,8 +118,8 @@ class TowerDefenseGame extends Phaser.Scene {
 
         // Create groups
         this.towers = this.add.group();
-        this.enemies = this.add.group();
-        this.bullets = this.add.group();
+        this.enemies = this.physics.add.group();
+        this.bullets = this.physics.add.group();
 
         // Initialize UI manager
         this.uiManager = new UIManager(this);
@@ -128,6 +128,9 @@ class TowerDefenseGame extends Phaser.Scene {
         // Input handling
         this.input.on('pointerdown', this.handleClick, this);
         this.input.on('pointermove', this.handleMouseMove, this);
+
+        // Set up physics overlap for bullet-enemy collisions
+        this.physics.add.overlap(this.bullets, this.enemies, this.handleBulletEnemyCollision, null, this);
     }
 
     handleMouseMove(pointer) {
@@ -136,6 +139,14 @@ class TowerDefenseGame extends Phaser.Scene {
 
     handleClick(pointer) {
         this.towerPlacementManager.handleClick(pointer);
+    }
+
+    handleBulletEnemyCollision(bullet, enemy) {
+        if (!bullet.active || !enemy.active) return;
+        // Call bullet's hit logic
+        if (bullet.onHitEnemy) {
+            bullet.onHitEnemy(enemy);
+        }
     }
 
     endGame() {
@@ -202,14 +213,23 @@ class TowerDefenseGame extends Phaser.Scene {
             const bullet = tower.shoot(time);
             if (bullet) {
                 this.bullets.add(bullet);
+                // Re-set velocity in case group resets it
+                if (bullet.body) {
+                    bullet.body.setVelocity(bullet.dirX * bullet.speed, bullet.dirY * bullet.speed);
+                }
             }
         });
 
         // Move bullets
         this.bullets.children.entries.forEach(bullet => {
-            const stillActive = bullet.move(delta);
-            if (!stillActive) {
-                // Bullet was destroyed (hit target or reached range)
+            if (!bullet.active) {
+                this.bullets.remove(bullet);
+                return;
+            }
+            // Check if bullet has traveled its range
+            const traveled = Phaser.Math.Distance.Between(bullet.startX, bullet.startY, bullet.x, bullet.y);
+            if (traveled > bullet.range) {
+                bullet.destroy();
                 this.bullets.remove(bullet);
             }
         });
