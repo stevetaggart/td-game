@@ -18,8 +18,13 @@ class UIManager {
         this.towersBuiltText = null;
         this.enemiesDefeatedText = null;
         
+        // Tooltip elements
+        this.tooltipContainer = null;
+        this.tooltipText = null;
+        
         // Register event listeners with fallback
         this.registerEventListeners();
+        this.createTooltip();
     }
 
     registerEventListeners() {
@@ -554,6 +559,55 @@ class UIManager {
             button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
             button.setAlpha(1);
         }
+    }
+
+    createTooltip() {
+        // Create a container for the tooltip
+        this.tooltipContainer = this.scene.add.container(0, 0).setDepth(1000).setVisible(false);
+        // Background rectangle (no border)
+        this.tooltipBg = this.scene.add.rectangle(0, 0, 180, 70, 0x222222, 0.95)
+            .setOrigin(0, 0);
+        // Tooltip text (initially at 0,0, will be repositioned)
+        this.tooltipText = this.scene.add.text(0, 0, '', {
+            fontSize: '16px',
+            fill: '#fff',
+            fontFamily: 'Arial',
+            wordWrap: { width: 164 },
+        });
+        this.tooltipContainer.add([this.tooltipBg, this.tooltipText]);
+        this.tooltipContainer.setScrollFactor && this.tooltipContainer.setScrollFactor(0);
+    }
+
+    showTooltip(x, y, text) {
+        const padding = 12;
+        this.tooltipText.setText(text);
+        // Move text to (padding/2, padding/2)
+        this.tooltipText.setPosition(padding / 2, padding / 2);
+        // Resize background to fit text + padding
+        const width = this.tooltipText.width + padding;
+        const height = this.tooltipText.height + padding;
+        this.tooltipBg.width = width;
+        this.tooltipBg.height = height;
+        // Position tooltip, clamp to screen
+        const maxX = GameConfig.GAME_WIDTH - width - 8;
+        const maxY = GameConfig.GAME_HEIGHT - height - 8;
+        this.tooltipContainer.x = Math.max(8, Math.min(x + 16, maxX));
+        this.tooltipContainer.y = Math.max(8, Math.min(y + 16, maxY));
+        this.tooltipContainer.setVisible(true);
+    }
+
+    hideTooltip() {
+        this.tooltipContainer.setVisible(false);
+    }
+
+    updateTooltipPosition(x, y) {
+        if (!this.tooltipContainer.visible) return;
+        const width = this.tooltipBg.width;
+        const height = this.tooltipBg.height;
+        const maxX = GameConfig.GAME_WIDTH - width - 8;
+        const maxY = GameConfig.GAME_HEIGHT - height - 8;
+        this.tooltipContainer.x = Math.max(8, Math.min(x + 16, maxX));
+        this.tooltipContainer.y = Math.max(8, Math.min(y + 16, maxY));
     }
 }
 

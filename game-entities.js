@@ -22,6 +22,19 @@ class Tower extends Phaser.GameObjects.Sprite {
         
         // Make interactive
         this.setInteractive();
+        // Tooltip events
+        this.on('pointerover', (pointer) => {
+            const config = GameConfig.TOWERS[this.towerType];
+            const stats = `Name: ${config.name}\nLevel: ${this.level}\nDamage: ${this.damage}\nRange: ${this.range}\nFire Rate: ${this.fireRate}ms`;
+            if (this.scene.uiManager && this.scene.uiManager.showTooltip) {
+                this.scene.uiManager.showTooltip(pointer.worldX, pointer.worldY, stats);
+            }
+        });
+        this.on('pointerout', () => {
+            if (this.scene.uiManager && this.scene.uiManager.hideTooltip) {
+                this.scene.uiManager.hideTooltip();
+            }
+        });
         
         // Add to scene
         scene.add.existing(this);
