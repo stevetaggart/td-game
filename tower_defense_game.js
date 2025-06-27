@@ -138,6 +138,9 @@ class TowerDefenseGame extends Phaser.Scene {
         if (this.uiManager && this.uiManager.updateTooltipPosition) {
             this.uiManager.updateTooltipPosition(pointer.worldX, pointer.worldY);
         }
+        if (this.uiManager && this.uiManager.updateEnemyTooltipPosition) {
+            this.uiManager.updateEnemyTooltipPosition(pointer.worldX, pointer.worldY);
+        }
     }
 
     handleClick(pointer) {

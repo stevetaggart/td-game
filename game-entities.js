@@ -175,6 +175,25 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         // Add to scene
         scene.add.existing(this);
         scene.physics.add.existing(this);
+
+        // Tooltip events for enemy
+        this.setInteractive();
+        this.on('pointerover', (pointer) => {
+            const config = GameConfig.ENEMIES[this.enemyType];
+            let stats = `Name: ${this.enemyType.charAt(0).toUpperCase() + this.enemyType.slice(1)}`;
+            stats += `\nHealth: ${this.health} / ${this.maxHealth}`;
+            stats += `\nSpeed: ${this.speed}`;
+            stats += `\nValue: ${this.value}`;
+            if (this.isBoss) stats += `\nType: Boss`;
+            if (this.scene.uiManager && this.scene.uiManager.showEnemyTooltip) {
+                this.scene.uiManager.showEnemyTooltip(pointer.worldX, pointer.worldY, stats);
+            }
+        });
+        this.on('pointerout', () => {
+            if (this.scene.uiManager && this.scene.uiManager.hideEnemyTooltip) {
+                this.scene.uiManager.hideEnemyTooltip();
+            }
+        });
     }
 
     updateHealthBar() {
@@ -300,6 +319,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         }
         if (this.bossLabel) {
             this.bossLabel.destroy();
+        }
+        // Hide tooltip if this enemy is being destroyed and the tooltip is visible
+        if (this.scene && this.scene.uiManager && this.scene.uiManager.hideEnemyTooltip) {
+            this.scene.uiManager.hideEnemyTooltip();
         }
         super.destroy();
     }

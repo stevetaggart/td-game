@@ -576,6 +576,19 @@ class UIManager {
         });
         this.tooltipContainer.add([this.tooltipBg, this.tooltipText]);
         this.tooltipContainer.setScrollFactor && this.tooltipContainer.setScrollFactor(0);
+
+        // Enemy tooltip
+        this.enemyTooltipContainer = this.scene.add.container(0, 0).setDepth(1000).setVisible(false);
+        this.enemyTooltipBg = this.scene.add.rectangle(0, 0, 180, 70, GameConfig.COLORS.BUTTON_GREEN, 0.95)
+            .setOrigin(0, 0);
+        this.enemyTooltipText = this.scene.add.text(0, 0, '', {
+            fontSize: '16px',
+            fill: '#fff',
+            fontFamily: 'Arial',
+            wordWrap: { width: 164 },
+        });
+        this.enemyTooltipContainer.add([this.enemyTooltipBg, this.enemyTooltipText]);
+        this.enemyTooltipContainer.setScrollFactor && this.enemyTooltipContainer.setScrollFactor(0);
     }
 
     showTooltip(x, y, text) {
@@ -608,6 +621,35 @@ class UIManager {
         const maxY = GameConfig.GAME_HEIGHT - height - 8;
         this.tooltipContainer.x = Math.max(8, Math.min(x + 16, maxX));
         this.tooltipContainer.y = Math.max(8, Math.min(y + 16, maxY));
+    }
+
+    showEnemyTooltip(x, y, text) {
+        const padding = 12;
+        this.enemyTooltipText.setText(text);
+        this.enemyTooltipText.setPosition(padding / 2, padding / 2);
+        const width = this.enemyTooltipText.width + padding;
+        const height = this.enemyTooltipText.height + padding;
+        this.enemyTooltipBg.width = width;
+        this.enemyTooltipBg.height = height;
+        const maxX = GameConfig.GAME_WIDTH - width - 8;
+        const maxY = GameConfig.GAME_HEIGHT - height - 8;
+        this.enemyTooltipContainer.x = Math.max(8, Math.min(x + 16, maxX));
+        this.enemyTooltipContainer.y = Math.max(8, Math.min(y + 16, maxY));
+        this.enemyTooltipContainer.setVisible(true);
+    }
+
+    hideEnemyTooltip() {
+        this.enemyTooltipContainer.setVisible(false);
+    }
+
+    updateEnemyTooltipPosition(x, y) {
+        if (!this.enemyTooltipContainer.visible) return;
+        const width = this.enemyTooltipBg.width;
+        const height = this.enemyTooltipBg.height;
+        const maxX = GameConfig.GAME_WIDTH - width - 8;
+        const maxY = GameConfig.GAME_HEIGHT - height - 8;
+        this.enemyTooltipContainer.x = Math.max(8, Math.min(x + 16, maxX));
+        this.enemyTooltipContainer.y = Math.max(8, Math.min(y + 16, maxY));
     }
 }
 
