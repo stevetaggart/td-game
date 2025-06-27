@@ -21,6 +21,14 @@ class TowerDefenseGame extends Phaser.Scene {
         this.load.image('bullet', GameConfig.ASSETS.bullet);
         this.load.image('cannonBall', GameConfig.ASSETS.cannonBall);
         
+        // Load sound effects
+        this.load.audio('shot', 'assets/sounds/shot_01.ogg');
+        this.load.audio('cannon', 'assets/sounds/cannon_01.ogg');
+        
+        // Load UI icons
+        this.load.image('speakerOn', GameConfig.ASSETS.speakerOn);
+        this.load.image('speakerOff', GameConfig.ASSETS.speakerOff);
+        
         this.createGhostTowerSprites();
         this.createPlacementIndicators();
     }

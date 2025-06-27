@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Speaker body -->
+  <path d="M3 9v6h4l5 5V4L7 9H3z" stroke="white" stroke-width="2" fill="none"/>
+  <!-- Sound waves - moved further right -->
+  <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" stroke="white" stroke-width="2" fill="none"/>
+  <path d="M21.07 4.93c-1.17-1.17-2.73-1.93-4.43-2.18v2.02c1.23.22 2.38.78 3.32 1.72.94.94 1.5 2.09 1.72 3.32h2.02c-.25-1.7-1.01-3.26-2.18-4.43z" stroke="white" stroke-width="2" fill="none"/>
+  <path d="M21.07 19.07c1.17-1.17 1.93-2.73 2.18-4.43h-2.02c-.22 1.23-.78 2.38-1.72 3.32-.94.94-2.09 1.5-3.32 1.72v2.02c1.7-.25 3.26-1.01 4.43-2.18z" stroke="white" stroke-width="2" fill="none"/>
+</svg> 

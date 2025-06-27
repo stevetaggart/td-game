@@ -81,6 +81,14 @@ class Tower extends Phaser.GameObjects.Sprite {
             const bullet = new Bullet(this.scene, this.x, this.y, target, this.damage, this.range, config.bulletTexture);
             this.lastFired = time;
             
+            // Play sound effect based on tower type
+            if (this.towerType === 'cannonTower') {
+                this.scene.sound.play('cannon', { volume: 0.8 });
+            } else {
+                // Basic and rapid towers use the same shot sound
+                this.scene.sound.play('shot', { volume: 0.7 });
+            }
+            
             // Create muzzle flash effect
             if (this.scene.effectsManager) {
                 this.scene.effectsManager.createMuzzleFlash(this.x, this.y);

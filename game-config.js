@@ -211,12 +211,14 @@ const GameConfig = {
         basicTower: 'assets/basic_tower_topdown_40x40.svg',
         rapidTower: 'assets/rapid_tower_topdown_40x40.svg',
         cannonTower: 'assets/canon_tower_topdown_40x40.svg',
-        enemyPath: 'assets/enemy_path_no_bg.svg',
         enemy: 'assets/enemy_basic.svg',
         strongEnemy: 'assets/enemy_strong.svg',
         bossEnemy: 'assets/enemy_boss.svg',
+        enemyPath: 'assets/enemy_path_no_bg.svg',
         bullet: 'assets/bullet_basic.svg',
-        cannonBall: 'assets/bullet_cannon.svg'
+        cannonBall: 'assets/bullet_cannon.svg',
+        speakerOn: 'assets/speaker-on.svg',
+        speakerOff: 'assets/speaker-off.svg'
     },
     
     // Effect settings

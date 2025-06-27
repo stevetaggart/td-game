@@ -13,6 +13,10 @@ class UIManager {
         this.waveText = null;
         this.enemiesText = null;
         
+        // Sound toggle
+        this.soundToggleButton = null;
+        this.soundEnabled = true;
+        
         // Game over screen elements
         this.finalWaveText = null;
         this.towersBuiltText = null;
@@ -91,6 +95,9 @@ class UIManager {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.ENEMIES_TEXT
         }).setOrigin(0, 0);
+        
+        // Create sound toggle button on the right side
+        this.createSoundToggleButton();
     }
 
     createButtonPanel() {
@@ -650,6 +657,110 @@ class UIManager {
         const maxY = GameConfig.GAME_HEIGHT - height - 8;
         this.enemyTooltipContainer.x = Math.max(8, Math.min(x + 16, maxX));
         this.enemyTooltipContainer.y = Math.max(8, Math.min(y + 16, maxY));
+    }
+
+    createSoundToggleButton() {
+        const buttonX = GameConfig.GAME_WIDTH - 80; // Position on the right side
+        const buttonY = 25;
+        const buttonSize = 30;
+        
+        // Create button container
+        const buttonContainer = this.scene.add.container(buttonX, buttonY);
+        
+        // Create button background
+        const button = this.scene.add.rectangle(0, 0, buttonSize, buttonSize, 
+            GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0.5, 0.5)
+            .setInteractive();
+
+        // Add button shadow
+        const shadow = this.scene.add.rectangle(1, 1, buttonSize, buttonSize, 
+            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0.5, 0.5);
+
+        // Create speaker icons using SVG images
+        const speakerIcon = this.scene.add.image(0, 0, 'speakerOn')
+            .setDisplaySize(20, 20)
+            .setOrigin(0.5, 0.5);
+
+        const mutedIcon = this.scene.add.image(0, 0, 'speakerOff')
+            .setDisplaySize(20, 20)
+            .setOrigin(0.5, 0.5);
+
+        // Add all elements to container
+        buttonContainer.add([shadow, button, speakerIcon, mutedIcon]);
+
+        // Store references
+        button.speakerIcon = speakerIcon;
+        button.mutedIcon = mutedIcon;
+        button.soundEnabled = true;
+
+        // Set initial state
+        this.updateSoundToggleState(button);
+
+        // Add hover effect
+        button.on('pointerover', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 100,
+                ease: 'Power2'
+            });
+        });
+
+        button.on('pointerout', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: 'Power2'
+            });
+        });
+
+        // Add click effect
+        button.on('pointerdown', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 50,
+                yoyo: true,
+                ease: 'Power2'
+            });
+        });
+
+        button.on('pointerup', () => {
+            this.toggleSound(button);
+        });
+
+        this.soundToggleButton = button;
+    }
+
+    updateSoundToggleState(button) {
+        if (button.soundEnabled) {
+            button.speakerIcon.setVisible(true);
+            button.mutedIcon.setVisible(false);
+            button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
+        } else {
+            button.speakerIcon.setVisible(false);
+            button.mutedIcon.setVisible(true);
+            button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+        }
+    }
+
+    toggleSound(button) {
+        button.soundEnabled = !button.soundEnabled;
+        this.soundEnabled = button.soundEnabled;
+        this.updateSoundToggleState(button);
+        
+        // Update global sound state
+        if (this.soundEnabled) {
+            this.scene.sound.setMute(false);
+        } else {
+            this.scene.sound.setMute(true);
+        }
     }
 }
 
