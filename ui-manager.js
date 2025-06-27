@@ -1,0 +1,563 @@
+// UI Manager Class
+class UIManager {
+    constructor(scene) {
+        this.scene = scene;
+        this.towerButtons = [];
+        this.upgradeButton = null; // Separate property for upgrade button
+        this.startWaveButton = null;
+        this.gameOverScreen = null;
+        
+        // UI text elements
+        this.healthText = null;
+        this.moneyText = null;
+        this.waveText = null;
+        this.enemiesText = null;
+        
+        // Game over screen elements
+        this.finalWaveText = null;
+        this.towersBuiltText = null;
+        this.enemiesDefeatedText = null;
+        
+        // Register event listeners with fallback
+        this.registerEventListeners();
+    }
+
+    registerEventListeners() {
+        // Try to register event listeners immediately
+        if (typeof window.gameEvents !== 'undefined') {
+            this.setupEventListeners();
+        } else {
+            // If gameEvents isn't available yet, try again after a short delay
+            setTimeout(() => {
+                if (typeof window.gameEvents !== 'undefined') {
+                    this.setupEventListeners();
+                } else {
+                    console.error("gameEvents still not available after retry");
+                }
+            }, 100);
+        }
+    }
+
+    setupEventListeners() {
+        // Listen for money change events
+        window.gameEvents.on('moneyChanged', () => {
+            this.updateAllButtonStates();
+        });
+        
+        // Listen for tower selection events
+        window.gameEvents.on('towerSelected', () => {
+            this.updateAllButtonStates();
+        });
+        
+        window.gameEvents.on('towerDeselected', () => {
+            this.updateAllButtonStates();
+        });
+    }
+
+    createUI() {
+        this.createStatsPanel();
+        this.createButtonPanel();
+        this.createGameOverScreen();
+    }
+
+    createStatsPanel() {
+        // Create stats panel as a horizontal bar at the top
+        const statsPanel = this.scene.add.rectangle(0, 0, GameConfig.GAME_WIDTH, GameConfig.UI_TOP_HEIGHT, 
+            GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
+            .setOrigin(0, 0);
+        
+        // Stats text - arranged horizontally with larger font
+        this.healthText = this.scene.add.text(40, 25, 'Health: 100', {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: GameConfig.COLORS.HEALTH_TEXT
+        }).setOrigin(0, 0);
+        
+        this.moneyText = this.scene.add.text(300, 25, 'Money: 100', {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: GameConfig.COLORS.MONEY_TEXT
+        }).setOrigin(0, 0);
+        
+        this.waveText = this.scene.add.text(560, 25, 'Wave: 1', {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: GameConfig.COLORS.WAVE_TEXT
+        }).setOrigin(0, 0);
+        
+        this.enemiesText = this.scene.add.text(820, 25, 'Enemies: 10', {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: GameConfig.COLORS.ENEMIES_TEXT
+        }).setOrigin(0, 0);
+    }
+
+    createButtonPanel() {
+        // Create bottom button panel
+        const buttonPanel = this.scene.add.rectangle(0, GameConfig.GAME_AREA_BOTTOM, GameConfig.GAME_WIDTH, 
+            GameConfig.UI_BOTTOM_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
+            .setOrigin(0, 0);
+
+        // Create tower buttons
+        this.createTowerButtons();
+        // Create upgrade button separately
+        this.createUpgradeButton();
+        this.createStartWaveButton();
+    }
+
+    createTowerButtons() {
+        const buttonWidth = GameConfig.UI.buttonWidth;
+        const buttonSpacing = GameConfig.UI.buttonSpacing;
+        const startX = GameConfig.UI.buttonStartX;
+        const buttonY = GameConfig.UI.buttonY;
+
+        // Create tower buttons with new spacing (only actual towers)
+        this.towerButtons.push(this.createTowerButton(startX, buttonY, 'Basic Tower ($20)', 'basicTower', 20));
+        this.towerButtons.push(this.createTowerButton(startX + buttonWidth + buttonSpacing, buttonY, 'Rapid Fire ($40)', 'rapidTower', 40));
+        this.towerButtons.push(this.createTowerButton(startX + (buttonWidth + buttonSpacing) * 2, buttonY, 'Cannon ($60)', 'cannonTower', 60));
+    }
+
+    createTowerButton(x, y, text, type, cost) {
+        const buttonContainer = this.scene.add.container(x, y);
+        
+        // Create button background with reduced width
+        const button = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth, GameConfig.UI.buttonHeight, 
+            GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0, 0)
+            .setInteractive();
+
+        // Add button shadow
+        const shadow = this.scene.add.rectangle(2, 2, GameConfig.UI.buttonWidth, GameConfig.UI.buttonHeight, 
+            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0, 0);
+
+        // Create selection indicator (initially hidden)
+        const selectionIndicator = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth + 4, 
+            GameConfig.UI.buttonHeight + 4, GameConfig.COLORS.SELECTION_YELLOW, 0.5)
+            .setOrigin(0, 0)
+            .setVisible(false);
+
+        // Add glow effect for selected state
+        const glow = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth + 4, 
+            GameConfig.UI.buttonHeight + 4, GameConfig.COLORS.SELECTION_GLOW, 0.2)
+            .setOrigin(0, 0)
+            .setVisible(false);
+
+        // Add text
+        const buttonText = this.scene.add.text(20, 25, text, {
+            fontSize: GameConfig.UI.buttonFontSize,
+            fill: '#fff',
+            fontFamily: 'Arial',
+            fontStyle: 'bold'
+        }).setOrigin(0, 0.5);
+
+        // Add all elements to container
+        buttonContainer.add([shadow, selectionIndicator, glow, button, buttonText]);
+
+        // Store references
+        button.selectionIndicator = selectionIndicator;
+        button.glow = glow;
+        button.cost = cost;
+        button.type = type;
+
+        // Add hover effect
+        button.on('pointerover', () => {
+            if (this.canAffordButton(button)) {
+                button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE_HOVER);
+                this.scene.tweens.add({
+                    targets: button,
+                    scaleX: 1.02,
+                    scaleY: 1.02,
+                    duration: 100,
+                    ease: 'Power2'
+                });
+            } else {
+                button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+                button.setAlpha(0.7);
+            }
+        });
+
+        button.on('pointerout', () => {
+            this.updateButtonState(button);
+        });
+
+        // Add press effect
+        button.on('pointerdown', () => {
+            if (this.canAffordButton(button)) {
+                this.scene.tweens.add({
+                    targets: button,
+                    scaleX: 0.95,
+                    scaleY: 0.95,
+                    duration: 50,
+                    yoyo: true,
+                    ease: 'Power2'
+                });
+            }
+        });
+
+        button.on('pointerup', () => {
+            if (this.canAffordButton(button)) {
+                // Regular tower button handling
+                this.handleTowerButtonClick(button, type);
+            }
+        });
+
+        // Update button state based on money
+        this.updateButtonState(button);
+
+        return buttonContainer;
+    }
+
+    canAffordButton(button) {
+        // For regular tower buttons, just check money
+        return this.scene.money >= button.cost;
+    }
+
+    handleUpgradeButtonClick(button) {
+        if (!this.scene.selectedTower) {
+            // No tower selected, can't upgrade
+            return;
+        }
+
+        if (this.scene.money < button.cost) {
+            // Not enough money
+            return;
+        }
+
+        // Immediately upgrade the tower
+        this.scene.upgradeTower();
+        
+        // Keep the upgrade button selected for visual feedback
+        this.scene.selectedTowerType = 'upgradeTower';
+        this.clearTowerButtonSelection();
+        button.selectionIndicator.setVisible(true);
+        button.glow.setVisible(true);
+        button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE_HOVER);
+    }
+
+    handleTowerButtonClick(button, type) {
+        // If this button is already selected, deselect it
+        if (this.scene.selectedTowerType === type) {
+            this.scene.selectedTowerType = null;
+            this.clearTowerButtonSelection();
+            button.selectionIndicator.setVisible(false);
+            button.glow.setVisible(false);
+            button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
+        } else {
+            // Select this button and clear other selections
+            this.scene.selectedTowerType = type;
+            this.clearTowerButtonSelection();
+            button.selectionIndicator.setVisible(true);
+            button.glow.setVisible(true);
+            button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE_HOVER);
+        }
+    }
+
+    createStartWaveButton() {
+        // Create start wave button container
+        const startWaveContainer = this.scene.add.container(GameConfig.UI.startWaveButtonX, GameConfig.UI.startWaveButtonY);
+
+        // Add button shadow
+        const startWaveShadow = this.scene.add.rectangle(2, 2, GameConfig.UI.startWaveButtonWidth - 20, 
+            GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0.5);
+
+        // Create start wave button with adjusted position
+        this.startWaveButton = this.scene.add.rectangle(0, 0, GameConfig.UI.startWaveButtonWidth, 
+            GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_GREEN)
+            .setOrigin(0.5)
+            .setInteractive();
+
+        // Add glow effect
+        const startWaveGlow = this.scene.add.rectangle(0, 0, GameConfig.UI.startWaveButtonWidth - 16, 
+            GameConfig.UI.startWaveButtonHeight + 4, GameConfig.COLORS.BUTTON_GREEN, 0.2)
+            .setOrigin(0.5)
+            .setVisible(false);
+
+        // Add text with improved styling
+        const startWaveText = this.scene.add.text(0, 0, 'Start Wave', {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: '#fff',
+            fontFamily: 'Arial',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        // Add all elements to container
+        startWaveContainer.add([startWaveShadow, startWaveGlow, this.startWaveButton, startWaveText]);
+
+        // Add hover effect
+        this.startWaveButton.on('pointerover', () => {
+            if (!this.scene.waveActive && !this.scene.gameOver) {
+                this.startWaveButton.setFillStyle(GameConfig.COLORS.BUTTON_GREEN_HOVER);
+                this.scene.tweens.add({
+                    targets: this.startWaveButton,
+                    scaleX: 1.05,
+                    scaleY: 1.05,
+                    duration: 100,
+                    ease: 'Power2'
+                });
+            }
+        });
+
+        this.startWaveButton.on('pointerout', () => {
+            if (!this.scene.waveActive && !this.scene.gameOver) {
+                this.startWaveButton.setFillStyle(GameConfig.COLORS.BUTTON_GREEN);
+                this.scene.tweens.add({
+                    targets: this.startWaveButton,
+                    scaleX: 1,
+                    scaleY: 1,
+                    duration: 100,
+                    ease: 'Power2'
+                });
+            }
+        });
+
+        // Add press effect
+        this.startWaveButton.on('pointerdown', () => {
+            if (!this.scene.waveActive && !this.scene.gameOver) {
+                this.scene.tweens.add({
+                    targets: this.startWaveButton,
+                    scaleX: 0.95,
+                    scaleY: 0.95,
+                    duration: 50,
+                    yoyo: true,
+                    ease: 'Power2'
+                });
+            }
+        });
+
+        this.startWaveButton.on('pointerup', () => {
+            if (!this.scene.waveActive && !this.scene.gameOver) {
+                this.scene.startWave();
+                startWaveGlow.setVisible(true);
+                this.startWaveButton.setFillStyle(GameConfig.COLORS.BUTTON_GREEN_HOVER);
+            }
+        });
+
+        // Store reference to glow
+        this.startWaveButton.glow = startWaveGlow;
+    }
+
+    createGameOverScreen() {
+        this.gameOverScreen = this.scene.add.container(GameConfig.GAME_WIDTH / 2, GameConfig.GAME_HEIGHT / 2);
+        this.gameOverScreen.setVisible(false);
+
+        const background = this.scene.add.rectangle(0, 0, 600, 400, GameConfig.COLORS.UI_PANEL, 0.9)
+            .setOrigin(0.5);
+
+        const gameOverText = this.scene.add.text(0, -150, '💀 GAME OVER 💀', {
+            fontSize: GameConfig.UI.gameOverFontSize,
+            fill: '#fff'
+        }).setOrigin(0.5);
+
+        this.finalWaveText = this.scene.add.text(0, -80, 'Final Wave: 0', {
+            fontSize: GameConfig.UI.gameOverStatsFontSize,
+            fill: '#fff'
+        }).setOrigin(0.5);
+
+        this.towersBuiltText = this.scene.add.text(0, -20, 'Towers Built: 0', {
+            fontSize: GameConfig.UI.gameOverStatsFontSize,
+            fill: '#fff'
+        }).setOrigin(0.5);
+
+        this.enemiesDefeatedText = this.scene.add.text(0, 40, 'Enemies Defeated: 0', {
+            fontSize: GameConfig.UI.gameOverStatsFontSize,
+            fill: '#fff'
+        }).setOrigin(0.5);
+
+        const restartButton = this.scene.add.rectangle(0, 120, 300, 60, GameConfig.COLORS.BUTTON_GREEN)
+            .setOrigin(0.5)
+            .setInteractive();
+
+        const restartButtonText = this.scene.add.text(0, 120, '🔄 Restart Game', {
+            fontSize: GameConfig.UI.gameOverStatsFontSize,
+            fill: '#fff'
+        }).setOrigin(0.5);
+
+        restartButton.on('pointerdown', () => {
+            this.scene.restartGame();
+        });
+
+        this.gameOverScreen.add([background, gameOverText, this.finalWaveText, 
+            this.towersBuiltText, this.enemiesDefeatedText, restartButton, restartButtonText]);
+    }
+
+    updateButtonState(button) {
+        // For regular tower buttons, just check money
+        if (this.scene.money < button.cost) {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+            button.setAlpha(0.7);
+        } else {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
+            button.setAlpha(1);
+        }
+    }
+
+    clearTowerButtonSelection() {
+        if (this.towerButtons) {
+            this.towerButtons.forEach((container, index) => {
+                // Find the actual interactive button (the one with input enabled)
+                const button = container.list.find(child => child.input && child.input.enabled);
+                if (button && button.selectionIndicator) {
+                    button.selectionIndicator.setVisible(false);
+                    button.glow.setVisible(false);
+                    button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
+                }
+            });
+        }
+        // Note: Upgrade button selection is handled separately and not cleared here
+    }
+
+    updateUI() {
+        this.healthText.setText(`Health: ${this.scene.health}`);
+        this.moneyText.setText(`Money: ${this.scene.money}`);
+        this.waveText.setText(`Wave: ${this.scene.wave}`);
+        this.enemiesText.setText(`Enemies: ${this.scene.enemiesInWave - this.scene.enemiesSpawned}`);
+    }
+
+    showGameOver() {
+        this.gameOverScreen.setVisible(true);
+        this.finalWaveText.setText(`Final Wave: ${this.scene.wave}`);
+        this.towersBuiltText.setText(`Towers Built: ${this.scene.towersBuilt}`);
+        this.enemiesDefeatedText.setText(`Enemies Defeated: ${this.scene.enemiesDefeated}`);
+    }
+
+    hideGameOver() {
+        this.gameOverScreen.setVisible(false);
+    }
+
+    updateAllButtonStates() {
+        // Update tower button states
+        this.towerButtons.forEach(container => {
+            const button = container.list.find(child => child.type === 'Rectangle' && child.input && child.input.enabled);
+            if (button) {
+                this.updateButtonState(button);
+            }
+        });
+        
+        // Update upgrade button state
+        if (this.upgradeButton) {
+            const button = this.upgradeButton.list.find(child => child.type === 'Rectangle' && child.input && child.input.enabled);
+            if (button) {
+                this.updateUpgradeButtonState(button);
+            }
+        }
+    }
+
+    createUpgradeButton() {
+        const buttonWidth = GameConfig.UI.buttonWidth;
+        const buttonSpacing = GameConfig.UI.buttonSpacing;
+        const startX = GameConfig.UI.buttonStartX;
+        const buttonY = GameConfig.UI.buttonY;
+        
+        // Position upgrade button after the tower buttons
+        const upgradeX = startX + (buttonWidth + buttonSpacing) * 3;
+        
+        this.upgradeButton = this.createUpgradeButtonElement(upgradeX, buttonY, 'Upgrade ($30)', 30);
+    }
+
+    createUpgradeButtonElement(x, y, text, cost) {
+        const buttonContainer = this.scene.add.container(x, y);
+        
+        // Create button background with reduced width
+        const button = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth, GameConfig.UI.buttonHeight, 
+            GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0, 0)
+            .setInteractive();
+
+        // Add button shadow
+        const shadow = this.scene.add.rectangle(2, 2, GameConfig.UI.buttonWidth, GameConfig.UI.buttonHeight, 
+            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0, 0);
+
+        // Create selection indicator (initially hidden)
+        const selectionIndicator = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth + 4, 
+            GameConfig.UI.buttonHeight + 4, GameConfig.COLORS.SELECTION_YELLOW, 0.5)
+            .setOrigin(0, 0)
+            .setVisible(false);
+
+        // Add glow effect for selected state
+        const glow = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth + 4, 
+            GameConfig.UI.buttonHeight + 4, GameConfig.COLORS.SELECTION_GLOW, 0.2)
+            .setOrigin(0, 0)
+            .setVisible(false);
+
+        // Add text
+        const buttonText = this.scene.add.text(20, 25, text, {
+            fontSize: GameConfig.UI.buttonFontSize,
+            fill: '#fff',
+            fontFamily: 'Arial',
+            fontStyle: 'bold'
+        }).setOrigin(0, 0.5);
+
+        // Add all elements to container
+        buttonContainer.add([shadow, selectionIndicator, glow, button, buttonText]);
+
+        // Store references
+        button.selectionIndicator = selectionIndicator;
+        button.glow = glow;
+        button.cost = cost;
+        button.type = 'upgradeTower';
+
+        // Add hover effect
+        button.on('pointerover', () => {
+            if (this.canAffordUpgradeButton(button)) {
+                button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE_HOVER);
+                this.scene.tweens.add({
+                    targets: button,
+                    scaleX: 1.02,
+                    scaleY: 1.02,
+                    duration: 100,
+                    ease: 'Power2'
+                });
+            } else {
+                button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+                button.setAlpha(0.7);
+            }
+        });
+
+        button.on('pointerout', () => {
+            this.updateUpgradeButtonState(button);
+        });
+
+        // Add press effect
+        button.on('pointerdown', () => {
+            if (this.canAffordUpgradeButton(button)) {
+                this.scene.tweens.add({
+                    targets: button,
+                    scaleX: 0.95,
+                    scaleY: 0.95,
+                    duration: 50,
+                    yoyo: true,
+                    ease: 'Power2'
+                });
+            }
+        });
+
+        button.on('pointerup', () => {
+            if (this.canAffordUpgradeButton(button)) {
+                this.handleUpgradeButtonClick(button);
+            }
+        });
+
+        // Update button state based on money and tower selection
+        this.updateUpgradeButtonState(button);
+
+        return buttonContainer;
+    }
+
+    canAffordUpgradeButton(button) {
+        return this.scene.selectedTower && this.scene.money >= button.cost;
+    }
+
+    updateUpgradeButtonState(button) {
+        if (!this.scene.selectedTower || this.scene.money < button.cost) {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+            button.setAlpha(0.7);
+        } else {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
+            button.setAlpha(1);
+        }
+    }
+}
+
+// Export for use in other files
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = UIManager;
+} 
