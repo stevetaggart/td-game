@@ -17,31 +17,12 @@ class TowerDefenseGame extends Phaser.Scene {
         this.load.image('strongEnemy', GameConfig.ASSETS.strongEnemy);
         this.load.image('bossEnemy', GameConfig.ASSETS.bossEnemy);
         
-        this.createBulletSprites();
+        // Load bullet SVGs
+        this.load.image('bullet', GameConfig.ASSETS.bullet);
+        this.load.image('cannonBall', GameConfig.ASSETS.cannonBall);
+        
         this.createGhostTowerSprites();
         this.createPlacementIndicators();
-    }
-
-    createBulletSprites() {
-        // Basic bullet
-        const graphics1 = this.add.graphics();
-        graphics1.fillStyle(GameConfig.COLORS.BULLET_BASIC);
-        graphics1.fillCircle(8, 8, 6);
-        graphics1.fillStyle(GameConfig.COLORS.BULLET_BASIC_CORE);
-        graphics1.fillCircle(8, 8, 2);
-        graphics1.generateTexture('bullet', 16, 16);
-        graphics1.destroy();
-
-        // Cannon ball
-        const graphics2 = this.add.graphics();
-        graphics2.fillStyle(GameConfig.COLORS.CANNON_BALL_OUTER);
-        graphics2.fillCircle(12, 12, 10);
-        graphics2.fillStyle(GameConfig.COLORS.CANNON_BALL_MIDDLE);
-        graphics2.fillCircle(12, 12, 8);
-        graphics2.fillStyle(GameConfig.COLORS.CANNON_BALL_INNER);
-        graphics2.fillCircle(10, 10, 4);
-        graphics2.generateTexture('cannonBall', 24, 24);
-        graphics2.destroy();
     }
 
     createGhostTowerSprites() {

@@ -214,7 +214,9 @@ const GameConfig = {
         enemyPath: 'assets/enemy_path_no_bg.svg',
         enemy: 'assets/enemy_basic.svg',
         strongEnemy: 'assets/enemy_strong.svg',
-        bossEnemy: 'assets/enemy_boss.svg'
+        bossEnemy: 'assets/enemy_boss.svg',
+        bullet: 'assets/bullet_basic.svg',
+        cannonBall: 'assets/bullet_cannon.svg'
     },
     
     // Effect settings
