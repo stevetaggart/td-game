@@ -208,13 +208,13 @@ const GameConfig = {
     
     // Asset paths
     ASSETS: {
-        basicTower: 'basic_tower_topdown_40x40.svg',
-        rapidTower: 'rapid_tower_topdown_40x40.svg',
-        cannonTower: 'canon_tower_topdown_40x40.svg',
-        enemyPath: 'enemy_path_no_bg.svg',
-        enemy: 'enemy_basic.svg',
-        strongEnemy: 'enemy_strong.svg',
-        bossEnemy: 'enemy_boss.svg'
+        basicTower: 'assets/basic_tower_topdown_40x40.svg',
+        rapidTower: 'assets/rapid_tower_topdown_40x40.svg',
+        cannonTower: 'assets/canon_tower_topdown_40x40.svg',
+        enemyPath: 'assets/enemy_path_no_bg.svg',
+        enemy: 'assets/enemy_basic.svg',
+        strongEnemy: 'assets/enemy_strong.svg',
+        bossEnemy: 'assets/enemy_boss.svg'
     },
     
     // Effect settings
