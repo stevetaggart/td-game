@@ -133,6 +133,11 @@ class TowerDefenseGame extends Phaser.Scene {
         this.uiManager = new UIManager(this);
         this.uiManager.createUI();
 
+        // Set initial sound state based on user preference
+        if (!this.uiManager.soundEnabled) {
+            this.sound.setMute(true);
+        }
+
         // Input handling
         this.input.on('pointerdown', this.handleClick, this);
         this.input.on('pointermove', this.handleMouseMove, this);

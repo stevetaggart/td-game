@@ -13,9 +13,9 @@ class UIManager {
         this.waveText = null;
         this.enemiesText = null;
         
-        // Sound toggle
+        // Sound toggle - load from cookie or default to true
         this.soundToggleButton = null;
-        this.soundEnabled = true;
+        this.soundEnabled = this.getSoundPreference();
         
         // Game over screen elements
         this.finalWaveText = null;
@@ -29,6 +29,30 @@ class UIManager {
         // Register event listeners with fallback
         this.registerEventListeners();
         this.createTooltip();
+    }
+
+    // Cookie utility functions
+    getSoundPreference() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'td_sound_enabled') {
+                return value === 'true';
+            }
+        }
+        return true; // Default to sound enabled
+    }
+
+    setSoundPreference(enabled) {
+        // Set cookie to expire in 1 year
+        const expiryDate = new Date();
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        document.cookie = `td_sound_enabled=${enabled}; expires=${expiryDate.toUTCString()}; path=/`;
+    }
+
+    // Getter for current sound state
+    getSoundState() {
+        return this.soundEnabled;
     }
 
     registerEventListeners() {
@@ -693,7 +717,7 @@ class UIManager {
         // Store references
         button.speakerIcon = speakerIcon;
         button.mutedIcon = mutedIcon;
-        button.soundEnabled = true;
+        button.soundEnabled = this.soundEnabled; // Use the loaded preference
 
         // Set initial state
         this.updateSoundToggleState(button);
@@ -754,6 +778,9 @@ class UIManager {
         button.soundEnabled = !button.soundEnabled;
         this.soundEnabled = button.soundEnabled;
         this.updateSoundToggleState(button);
+        
+        // Save preference to cookie
+        this.setSoundPreference(this.soundEnabled);
         
         // Update global sound state
         if (this.soundEnabled) {
