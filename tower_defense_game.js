@@ -149,9 +149,18 @@ class TowerDefenseGame extends Phaser.Scene {
 
     handleBulletEnemyCollision(bullet, enemy) {
         if (!bullet.active || !enemy.active) return;
-        // Call bullet's hit logic
-        if (bullet.onHitEnemy) {
-            bullet.onHitEnemy(enemy);
+
+        // Simple circle-based collision
+        const bulletRadius = bullet.displayWidth / 2;
+        const enemyRadius = enemy.displayWidth / 2;
+        const dx = bullet.x - enemy.x;
+        const dy = bullet.y - enemy.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < bulletRadius + enemyRadius) {
+            if (bullet.onHitEnemy) {
+                bullet.onHitEnemy(enemy);
+            }
         }
     }
 
@@ -275,8 +284,8 @@ class TowerDefenseGame extends Phaser.Scene {
         this.effectsManager.createBossDeathEffect(x, y);
     }
 
-    createUpgradeEffect(x, y) {
-        this.effectsManager.createUpgradeEffect(x, y);
+    createUpgradeEffect(tower) {
+        this.effectsManager.createUpgradeEffect(tower);
     }
 
     createMuzzleFlash(x, y) {

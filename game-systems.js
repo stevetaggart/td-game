@@ -439,7 +439,7 @@ class TowerPlacementManager {
 
         // Create upgrade effect using effects manager
         if (this.scene.effectsManager) {
-            this.scene.effectsManager.createUpgradeEffect(this.selectedTower.x, this.selectedTower.y);
+            this.scene.effectsManager.createUpgradeEffect(this.selectedTower);
         }
         
         // Emit money change event

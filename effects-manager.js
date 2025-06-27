@@ -85,8 +85,6 @@ class EffectsManager {
         this.scene.tweens.add({
             targets: explosion,
             alpha: 0,
-            scaleX: config.scale,
-            scaleY: config.scale,
             duration: config.duration,
             ease: 'Power2',
             onComplete: () => explosion.destroy()
@@ -113,22 +111,37 @@ class EffectsManager {
     }
 
     // Tower upgrade effect
-    createUpgradeEffect(x, y) {
+    createUpgradeEffect(tower) {
         const upgrade = this.scene.add.graphics();
         const config = GameConfig.EFFECTS.upgradeEffect;
-        
+        const x = tower.x;
+        const y = tower.y;
+        const startRadius = config.innerRadius;
+        const endRadius = tower.range;
+
+        // Initial draw
         upgrade.lineStyle(2, GameConfig.COLORS.UPGRADE_EFFECT_BLUE, 1);
-        upgrade.strokeCircle(x, y, config.innerRadius);
+        upgrade.strokeCircle(x, y, startRadius);
         upgrade.lineStyle(2, GameConfig.COLORS.UPGRADE_EFFECT_PURPLE, 1);
-        upgrade.strokeCircle(x, y, config.outerRadius);
-        
+        upgrade.strokeCircle(x, y, startRadius + 5);
+        upgrade.alpha = 1;
+
+        // Tween custom property
+        const tweenData = { radius: startRadius, alpha: 1 };
         this.scene.tweens.add({
-            targets: upgrade,
+            targets: tweenData,
+            radius: endRadius,
             alpha: 0,
-            scaleX: config.scale,
-            scaleY: config.scale,
             duration: config.duration,
             ease: 'Power2',
+            onUpdate: () => {
+                upgrade.clear();
+                upgrade.lineStyle(2, GameConfig.COLORS.UPGRADE_EFFECT_BLUE, 1);
+                upgrade.strokeCircle(x, y, tweenData.radius);
+                upgrade.lineStyle(2, GameConfig.COLORS.UPGRADE_EFFECT_PURPLE, 1);
+                upgrade.strokeCircle(x, y, tweenData.radius + 5);
+                upgrade.alpha = tweenData.alpha;
+            },
             onComplete: () => upgrade.destroy()
         });
     }
@@ -146,8 +159,6 @@ class EffectsManager {
         this.scene.tweens.add({
             targets: flash,
             alpha: 0,
-            scaleX: config.scale,
-            scaleY: config.scale,
             duration: config.duration,
             ease: 'Power2',
             onComplete: () => flash.destroy()
