@@ -14,6 +14,11 @@ class Tower extends Phaser.GameObjects.Sprite {
         this.level = 1;
         this.lastFired = 0;
         
+        // New stats tracking
+        this.shotsFired = 0;
+        this.shotsHit = 0;
+        this.oofs = 0;
+        
         // Add range indicator
         this.rangeGraphics = scene.add.graphics();
         this.rangeGraphics.lineStyle(1, 0xffffff, 0.3);
@@ -26,7 +31,8 @@ class Tower extends Phaser.GameObjects.Sprite {
         this.on('pointerover', (pointer) => {
             const config = GameConfig.TOWERS[this.towerType];
             const upgradeCost = this.getUpgradeCost();
-            const stats = `Name: ${config.name}\nLevel: ${this.level}\nDamage: ${this.damage}\nRange: ${this.range}\nFire Rate: ${this.fireRate}ms\nUpgrade Cost: $${upgradeCost}`;
+            const hitPercentage = this.shotsFired > 0 ? Math.round((this.shotsHit / this.shotsFired) * 100) : 0;
+            const stats = `Name: ${config.name}\nLevel: ${this.level}\nDamage: ${this.damage}\nRange: ${this.range}\nFire Rate: ${this.fireRate}ms\nUpgrade Cost: $${upgradeCost}\nHit %: ${hitPercentage}%\nOofs: ${this.oofs}`;
             if (this.scene.uiManager && this.scene.uiManager.showTooltip) {
                 this.scene.uiManager.showTooltip(pointer.worldX, pointer.worldY, stats);
             }
@@ -47,6 +53,26 @@ class Tower extends Phaser.GameObjects.Sprite {
         const baseUpgradeCost = config.upgradeCost;
         // Each level increases the cost by 50% of the base cost
         return Math.floor(baseUpgradeCost + (this.level - 1) * (baseUpgradeCost * 0.5));
+    }
+
+    // Get hit percentage
+    getHitPercentage() {
+        return this.shotsFired > 0 ? Math.round((this.shotsHit / this.shotsFired) * 100) : 0;
+    }
+
+    // Record a shot fired
+    recordShot() {
+        this.shotsFired++;
+    }
+
+    // Record a hit
+    recordHit() {
+        this.shotsHit++;
+    }
+
+    // Record an oof
+    recordOof() {
+        this.oofs++;
     }
 
     updateRotation() {
@@ -87,8 +113,11 @@ class Tower extends Phaser.GameObjects.Sprite {
                 this.setRotation(angleToTarget);
             }
             
-            const bullet = new Bullet(this.scene, this.x, this.y, target, this.damage, this.range, config.bulletTexture);
+            const bullet = new Bullet(this.scene, this.x, this.y, target, this.damage, this.range, config.bulletTexture, this);
             this.lastFired = time;
+            
+            // Record the shot
+            this.recordShot();
             
             // Play sound effect based on tower type
             if (this.towerType === 'cannonTower') {
@@ -340,7 +369,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
             }
             
             this.destroy();
-            return true; // Enemy killed
+            return true; // Enemy oofed
         }
         
         // Update health bar
@@ -370,7 +399,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
 // Bullet Class
 class Bullet extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, target, damage, range, texture) {
+    constructor(scene, x, y, target, damage, range, texture, tower) {
         super(scene, x, y, texture);
         
         this.scene = scene;
@@ -380,6 +409,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
         this.speed = GameConfig.GAME.bulletSpeed;
         this.startX = x;
         this.startY = y;
+        this.tower = tower; // Reference to the tower that fired this bullet
         
         // Calculate direction
         this.angleToTarget = Phaser.Math.Angle.Between(x, y, target.x, target.y);
@@ -409,8 +439,20 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     onHitEnemy(enemy) {
         if (!enemy.active) return;
-        const killed = enemy.takeDamage(this.damage);
-        if (killed && this.scene.effectsManager) {
+        
+        // Record the hit for the tower
+        if (this.tower) {
+            this.tower.recordHit();
+        }
+        
+        const oofed = enemy.takeDamage(this.damage);
+        
+        // Record the oof for the tower
+        if (oofed && this.tower) {
+            this.tower.recordOof();
+        }
+        
+        if (oofed && this.scene.effectsManager) {
             if (enemy.enemyType === 'superBoss') {
                 this.scene.effectsManager.createSuperBossDeathEffect(enemy.x, enemy.y);
             } else if (enemy.isBoss) {
