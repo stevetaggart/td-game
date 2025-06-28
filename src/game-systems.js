@@ -440,24 +440,23 @@ class TowerPlacementManager {
     }
 
     upgradeTower() {
-        if (!this.selectedTower || this.scene.money < GameConfig.TOWERS.basicTower.upgradeCost) return;
+        if (!this.selectedTower) return;
 
-        // Deduct money
-        this.scene.money -= GameConfig.TOWERS.basicTower.upgradeCost;
+        const upgradeCost = this.selectedTower.getUpgradeCost();
+        if (this.scene.money < upgradeCost) return;
 
-        // Upgrade the tower
-        this.selectedTower.upgrade();
-
-        // Create upgrade effect using effects manager
-        if (this.scene.effectsManager) {
-            this.scene.effectsManager.createUpgradeEffect(this.selectedTower);
+        // Upgrade the tower (this will handle money deduction and stats update)
+        const upgradeSuccess = this.selectedTower.upgrade();
+        
+        if (upgradeSuccess) {
+            // Create upgrade effect using effects manager
+            if (this.scene.effectsManager) {
+                this.scene.effectsManager.createUpgradeEffect(this.selectedTower);
+            }
+            
+            // Update UI
+            this.scene.uiManager.updateUI();
         }
-        
-        // Emit money change event
-        window.gameEvents.emit('moneyChanged', { newAmount: this.scene.money, change: -GameConfig.TOWERS.basicTower.upgradeCost });
-        
-        // Update UI
-        this.scene.uiManager.updateUI();
     }
 }
 

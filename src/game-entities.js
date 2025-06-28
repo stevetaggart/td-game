@@ -25,7 +25,8 @@ class Tower extends Phaser.GameObjects.Sprite {
         // Tooltip events
         this.on('pointerover', (pointer) => {
             const config = GameConfig.TOWERS[this.towerType];
-            const stats = `Name: ${config.name}\nLevel: ${this.level}\nDamage: ${this.damage}\nRange: ${this.range}\nFire Rate: ${this.fireRate}ms`;
+            const upgradeCost = this.getUpgradeCost();
+            const stats = `Name: ${config.name}\nLevel: ${this.level}\nDamage: ${this.damage}\nRange: ${this.range}\nFire Rate: ${this.fireRate}ms\nUpgrade Cost: $${upgradeCost}`;
             if (this.scene.uiManager && this.scene.uiManager.showTooltip) {
                 this.scene.uiManager.showTooltip(pointer.worldX, pointer.worldY, stats);
             }
@@ -38,6 +39,14 @@ class Tower extends Phaser.GameObjects.Sprite {
         
         // Add to scene
         scene.add.existing(this);
+    }
+
+    // Calculate upgrade cost based on current level
+    getUpgradeCost() {
+        const config = GameConfig.TOWERS[this.towerType];
+        const baseUpgradeCost = config.upgradeCost;
+        // Each level increases the cost by 50% of the base cost
+        return Math.floor(baseUpgradeCost + (this.level - 1) * (baseUpgradeCost * 0.5));
     }
 
     updateRotation() {
@@ -102,9 +111,22 @@ class Tower extends Phaser.GameObjects.Sprite {
 
     upgrade() {
         const config = GameConfig.TOWERS[this.towerType];
+        const upgradeCost = this.getUpgradeCost();
+        
+        // Check if player has enough money
+        if (this.scene.money < upgradeCost) {
+            return false;
+        }
+        
         this.level++;
         this.damage += config.damageIncrease;
         this.range += config.rangeIncrease;
+        
+        // Deduct money
+        this.scene.money -= upgradeCost;
+        
+        // Emit money change event
+        window.gameEvents.emit('moneyChanged', { newAmount: this.scene.money, change: -upgradeCost });
         
         // Update range graphics
         if (this.rangeGraphics) {
@@ -112,6 +134,8 @@ class Tower extends Phaser.GameObjects.Sprite {
             this.rangeGraphics.lineStyle(1, 0xffffff, 0.3);
             this.rangeGraphics.strokeCircle(this.x, this.y, this.range);
         }
+        
+        return true;
     }
 
     select() {

@@ -80,10 +80,12 @@ class UIManager {
         // Listen for tower selection events
         window.gameEvents.on('towerSelected', () => {
             this.updateAllButtonStates();
+            this.updateUpgradeButtonText();
         });
         
         window.gameEvents.on('towerDeselected', () => {
             this.updateAllButtonStates();
+            this.updateUpgradeButtonText();
         });
     }
 
@@ -251,7 +253,8 @@ class UIManager {
             return;
         }
 
-        if (this.scene.money < button.cost) {
+        const upgradeCost = this.scene.selectedTower.getUpgradeCost();
+        if (this.scene.money < upgradeCost) {
             // Not enough money
             return;
         }
@@ -467,12 +470,13 @@ class UIManager {
             }
         });
         
-        // Update upgrade button state
+        // Update upgrade button state and text
         if (this.upgradeButton) {
             const button = this.upgradeButton.list.find(child => child.type === 'Rectangle' && child.input && child.input.enabled);
             if (button) {
                 this.updateUpgradeButtonState(button);
             }
+            this.updateUpgradeButtonText();
         }
     }
 
@@ -579,16 +583,46 @@ class UIManager {
     }
 
     canAffordUpgradeButton(button) {
-        return this.scene.selectedTower && this.scene.money >= button.cost;
+        if (!this.scene.selectedTower) return false;
+        const upgradeCost = this.scene.selectedTower.getUpgradeCost();
+        return this.scene.money >= upgradeCost;
     }
 
     updateUpgradeButtonState(button) {
-        if (!this.scene.selectedTower || this.scene.money < button.cost) {
+        if (!this.scene.selectedTower) {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+            button.setAlpha(0.7);
+            return;
+        }
+        
+        const upgradeCost = this.scene.selectedTower.getUpgradeCost();
+        if (this.scene.money < upgradeCost) {
             button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
             button.setAlpha(0.7);
         } else {
             button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
             button.setAlpha(1);
+        }
+    }
+
+    updateUpgradeButtonText() {
+        if (!this.upgradeButton) {
+            return;
+        }
+        
+        // Find the button element by looking for the one with type 'upgradeTower'
+        const button = this.upgradeButton.list.find(child => child.type === 'upgradeTower');
+        const buttonText = this.upgradeButton.list.find(child => child.type === 'Text');
+        
+        if (!button || !buttonText) return;
+        
+        if (this.scene.selectedTower) {
+            const upgradeCost = this.scene.selectedTower.getUpgradeCost();
+            button.cost = upgradeCost;
+            buttonText.setText(`Upgrade ($${upgradeCost})`);
+        } else {
+            button.cost = 0;
+            buttonText.setText('Upgrade ($0)');
         }
     }
 
