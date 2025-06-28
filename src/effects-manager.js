@@ -35,6 +35,62 @@ class EffectsManager {
         this.scene.cameras.main.shake(config.shakeDuration, config.shakeIntensity);
     }
 
+    // Super boss spawn effect
+    createSuperBossSpawnEffect(x, y) {
+        const spawnEffect = this.scene.add.graphics();
+        const config = GameConfig.EFFECTS.bossSpawnEffect;
+        
+        // Multiple outer rings for super boss
+        spawnEffect.lineStyle(6, GameConfig.COLORS.BOSS_SPAWN_RED, 1);
+        spawnEffect.strokeCircle(x, y, config.outerRadius + 10);
+        spawnEffect.lineStyle(4, GameConfig.COLORS.BOSS_SPAWN_RED, 1);
+        spawnEffect.strokeCircle(x, y, config.outerRadius);
+        
+        // Inner rings
+        spawnEffect.lineStyle(3, GameConfig.COLORS.BOSS_SPAWN_ORANGE, 1);
+        spawnEffect.strokeCircle(x, y, config.innerRadius + 5);
+        spawnEffect.lineStyle(2, GameConfig.COLORS.BOSS_SPAWN_ORANGE, 1);
+        spawnEffect.strokeCircle(x, y, config.innerRadius);
+        
+        // Center flash
+        spawnEffect.fillStyle(GameConfig.COLORS.BOSS_SPAWN_WHITE, 0.9);
+        spawnEffect.fillCircle(x, y, config.centerRadius + 5);
+        spawnEffect.fillStyle(GameConfig.COLORS.BOSS_SPAWN_WHITE, 0.8);
+        spawnEffect.fillCircle(x, y, config.centerRadius);
+        
+        this.scene.tweens.add({
+            targets: spawnEffect,
+            alpha: 0,
+            scaleX: config.scale * 1.5,
+            scaleY: config.scale * 1.5,
+            duration: config.duration * 1.5,
+            ease: 'Power2',
+            onComplete: () => spawnEffect.destroy()
+        });
+        
+        // Add stronger screen shake effect for super boss
+        this.scene.cameras.main.shake(config.shakeDuration * 1.5, config.shakeIntensity * 2);
+        
+        // Add warning text
+        const warningText = this.scene.add.text(x, y - 100, 'SUPER BOSS INCOMING!', {
+            fontSize: '24px',
+            fill: '#ff0000',
+            fontStyle: 'bold',
+            stroke: '#ffffff',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+        
+        this.scene.tweens.add({
+            targets: warningText,
+            alpha: 0,
+            scaleX: 1.5,
+            scaleY: 1.5,
+            duration: 2000,
+            ease: 'Power2',
+            onComplete: () => warningText.destroy()
+        });
+    }
+
     // Boss death effect
     createBossDeathEffect(x, y) {
         const explosion = this.scene.add.graphics();
@@ -68,6 +124,68 @@ class EffectsManager {
         
         // Add screen shake for boss death
         this.scene.cameras.main.shake(config.shakeDuration, config.shakeIntensity);
+    }
+
+    // Super boss death effect
+    createSuperBossDeathEffect(x, y) {
+        const explosion = this.scene.add.graphics();
+        const config = GameConfig.EFFECTS.bossDeathEffect;
+        
+        // Multiple explosion rings for super boss
+        explosion.lineStyle(5, GameConfig.COLORS.DEATH_EFFECT_RED, 0.9);
+        explosion.strokeCircle(x, y, 8);
+        explosion.lineStyle(4, GameConfig.COLORS.DEATH_EFFECT_RED, 0.8);
+        explosion.strokeCircle(x, y, 15);
+        explosion.lineStyle(3, GameConfig.COLORS.DEATH_EFFECT_ORANGE, 0.7);
+        explosion.strokeCircle(x, y, 22);
+        explosion.lineStyle(2, GameConfig.COLORS.DEATH_EFFECT_ORANGE, 0.6);
+        explosion.strokeCircle(x, y, 30);
+        explosion.lineStyle(1, GameConfig.COLORS.DEATH_EFFECT_WHITE, 0.5);
+        explosion.strokeCircle(x, y, 40);
+        
+        // Center explosion
+        explosion.fillStyle(GameConfig.COLORS.DEATH_EFFECT_RED, 0.9);
+        explosion.fillCircle(x, y, 12);
+        explosion.fillStyle(GameConfig.COLORS.DEATH_EFFECT_RED, 0.8);
+        explosion.fillCircle(x, y, 18);
+        explosion.fillStyle(GameConfig.COLORS.DEATH_EFFECT_ORANGE, 0.7);
+        explosion.fillCircle(x, y, 25);
+        explosion.fillStyle(GameConfig.COLORS.DEATH_EFFECT_ORANGE, 0.6);
+        explosion.fillCircle(x, y, 35);
+        explosion.fillStyle(GameConfig.COLORS.DEATH_EFFECT_WHITE, 0.5);
+        explosion.fillCircle(x, y, 45);
+        
+        this.scene.tweens.add({
+            targets: explosion,
+            alpha: 0,
+            scaleX: config.scale * 1.5,
+            scaleY: config.scale * 1.5,
+            duration: config.duration * 1.5,
+            ease: 'Power2',
+            onComplete: () => explosion.destroy()
+        });
+        
+        // Add stronger screen shake for super boss death
+        this.scene.cameras.main.shake(config.shakeDuration * 1.5, config.shakeIntensity * 2);
+        
+        // Add victory text
+        const victoryText = this.scene.add.text(x, y - 80, 'SUPER BOSS DEFEATED!', {
+            fontSize: '20px',
+            fill: '#00ff00',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+        
+        this.scene.tweens.add({
+            targets: victoryText,
+            alpha: 0,
+            scaleX: 1.3,
+            scaleY: 1.3,
+            duration: 2500,
+            ease: 'Power2',
+            onComplete: () => victoryText.destroy()
+        });
     }
 
     // Regular enemy death effect

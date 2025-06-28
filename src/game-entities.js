@@ -171,7 +171,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.damageToPlayer = config.damageToPlayer;
         
         // Boss-specific properties
-        if (enemyType === 'boss') {
+        if (enemyType === 'boss' || enemyType === 'superBoss') {
             this.isBoss = true;
             this.setScale(config.scale);
         }
@@ -188,7 +188,11 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.setInteractive();
         this.on('pointerover', (pointer) => {
             const config = GameConfig.ENEMIES[this.enemyType];
-            let stats = `Name: ${this.enemyType.charAt(0).toUpperCase() + this.enemyType.slice(1)}`;
+            let enemyName = this.enemyType.charAt(0).toUpperCase() + this.enemyType.slice(1);
+            if (this.enemyType === 'superBoss') {
+                enemyName = 'Super Boss';
+            }
+            let stats = `Name: ${enemyName}`;
             stats += `\nHealth: ${this.health} / ${this.maxHealth}`;
             stats += `\nSpeed: ${this.speed}`;
             stats += `\nValue: ${this.value}`;
@@ -206,7 +210,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     updateHealthBar() {
         this.healthBar.clear();
-        const config = this.isBoss ? GameConfig.ENEMIES.boss : GameConfig.ENEMIES.basic;
+        const config = this.isBoss ? GameConfig.ENEMIES[this.enemyType] : GameConfig.ENEMIES.basic;
         const barWidth = config.healthBarWidth;
         const barHeight = config.healthBarHeight;
         const healthPercent = this.health / this.maxHealth;
@@ -232,7 +236,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     updateBossHealthBar() {
         this.healthBar.clear();
-        const config = GameConfig.ENEMIES.boss;
+        const config = GameConfig.ENEMIES[this.enemyType];
         const barWidth = config.healthBarWidth;
         const barHeight = config.healthBarHeight;
         const healthPercent = this.health / this.maxHealth;
@@ -254,14 +258,18 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.healthBar.strokeRect(this.x - barWidth/2, barY, barWidth, barHeight);
         
         // Create or update boss label text
+        const bossLabelText = this.enemyType === 'superBoss' ? 'SUPER BOSS' : 'BOSS';
+        const labelWidth = this.enemyType === 'superBoss' ? 60 : 30;
+        
         if (!this.bossLabel) {
-            this.bossLabel = this.scene.add.text(this.x - 15, barY - 10, 'BOSS', {
+            this.bossLabel = this.scene.add.text(this.x - labelWidth/2, barY - 10, bossLabelText, {
                 fontSize: '12px',
                 fill: '#ffffff',
                 fontStyle: 'bold'
             }).setOrigin(0.5);
         } else {
-            this.bossLabel.setPosition(this.x - 15, barY - 10);
+            this.bossLabel.setPosition(this.x - labelWidth/2, barY - 10);
+            this.bossLabel.setText(bossLabelText);
         }
     }
 
@@ -379,7 +387,9 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
         if (!enemy.active) return;
         const killed = enemy.takeDamage(this.damage);
         if (killed && this.scene.effectsManager) {
-            if (enemy.isBoss) {
+            if (enemy.enemyType === 'superBoss') {
+                this.scene.effectsManager.createSuperBossDeathEffect(enemy.x, enemy.y);
+            } else if (enemy.isBoss) {
                 this.scene.effectsManager.createBossDeathEffect(enemy.x, enemy.y);
             } else {
                 this.scene.effectsManager.createDeathEffect(enemy.x, enemy.y);

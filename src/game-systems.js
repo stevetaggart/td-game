@@ -91,6 +91,17 @@ class WaveManager {
             return;
         }
 
+        // Spawn super boss enemy on wave 30
+        if (this.currentWave === GameConfig.ENEMIES.superBoss.spawnWave && this.enemiesSpawned === 0) {
+            const superBoss = new Enemy(this.scene, this.scene.path[0].x, this.scene.path[0].y, 'superBoss', this.currentWave);
+            this.scene.enemies.add(superBoss);
+            this.enemiesSpawned++;
+            if (this.scene.effectsManager) {
+                this.scene.effectsManager.createSuperBossSpawnEffect(this.scene.path[0].x, this.scene.path[0].y);
+            }
+            return;
+        }
+
         // Spawn boss enemy on wave 10
         if (this.currentWave === GameConfig.ENEMIES.boss.spawnWave && this.enemiesSpawned === 0) {
             const boss = new Enemy(this.scene, this.scene.path[0].x, this.scene.path[0].y, 'boss', this.currentWave);

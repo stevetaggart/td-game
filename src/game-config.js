@@ -147,6 +147,20 @@ const GameConfig = {
             damageToPlayer: 50,
             scale: 1.2,
             spawnWave: 10
+        },
+        superBoss: {
+            spriteKey: 'bossEnemy',
+            baseHealth: 15000,
+            healthIncrease: 500,
+            baseSpeed: 25,
+            speedIncrease: 3,
+            baseValue: 200,
+            valueIncrease: 50,
+            healthBarWidth: 60,
+            healthBarHeight: 8,
+            damageToPlayer: 100,
+            scale: 1.5,
+            spawnWave: 30
         }
     },
     
