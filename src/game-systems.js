@@ -305,8 +305,12 @@ class TowerPlacementManager {
             return;
         }
 
-        // Don't show ghost tower for upgrade button
-        if (this.selectedTowerType === 'upgradeTower') {
+        // Only allow ghost tower for real tower types
+        if (
+            this.selectedTowerType === 'upgradeTower' ||
+            this.selectedTowerType === 'sellTower' ||
+            !GameConfig.TOWERS[this.selectedTowerType]
+        ) {
             this.hideGhostTower();
             return;
         }
@@ -414,13 +418,13 @@ class TowerPlacementManager {
         if (this.selectedTowerType === 'upgradeTower') {
             return;
         }
-        
+
         const towerConfig = GameConfig.TOWERS[this.selectedTowerType];
-        
+
         if (this.scene.money >= towerConfig.cost) {
             // Create tower using the Tower class
             const tower = new Tower(this.scene, x, y, this.selectedTowerType);
-            
+
             // Add visual effects for placement using effects manager
             if (this.scene.effectsManager) {
                 this.scene.effectsManager.createPlacementEffect(x, y);
@@ -428,6 +432,11 @@ class TowerPlacementManager {
 
             // Clear any lingering placement effects (ghosts, indicators)
             this.hideGhostTower();
+            // Deselect tower type and button after placement
+            this.selectedTowerType = null;
+            if (this.scene.uiManager && typeof this.scene.uiManager.clearTowerButtonSelection === 'function') {
+                this.scene.uiManager.clearTowerButtonSelection();
+            }
 
             this.scene.towers.add(tower);
             this.scene.money -= towerConfig.cost;

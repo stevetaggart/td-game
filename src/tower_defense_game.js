@@ -34,16 +34,13 @@ class TowerDefenseGame extends Phaser.Scene {
             });
         }
 
-        // Adjust enemy speeds
+        // Adjust enemy speeds (apply to all current and future enemies)
+        this._enemySpeedMult = mult;
         if (this.enemies && this.enemies.children && this.enemies.children.entries) {
             this.enemies.children.entries.forEach(enemy => {
-                if (!enemy._originalSpeed) {
-                    enemy._originalSpeed = enemy.speed;
-                }
-                if (mult === 1) {
-                    enemy.speed = enemy._originalSpeed;
-                } else {
-                    enemy.speed = enemy._originalSpeed * mult;
+                // Always use the true base speed for scaling
+                if (typeof enemy.baseSpeed === 'number') {
+                    enemy.speed = enemy.baseSpeed * mult;
                 }
             });
         }
@@ -297,14 +294,16 @@ class TowerDefenseGame extends Phaser.Scene {
         if (this.gameStateManager.gameOver) return;
         if (this._isPaused) return;
 
-        // Move enemies
-        this.enemies.children.entries.forEach(enemy => {
+        // Move enemies (iterate backwards to avoid skipping any on removal)
+        const enemiesArr = this.enemies.children.entries;
+        for (let i = enemiesArr.length - 1; i >= 0; i--) {
+            const enemy = enemiesArr[i];
             const stillAlive = enemy.move(delta, this.path);
             if (!stillAlive) {
                 // Enemy was destroyed (reached end or died)
                 this.enemies.remove(enemy);
             }
-        });
+        }
 
         // Update tower rotations and shooting
         this.towers.children.entries.forEach(tower => {
@@ -362,6 +361,8 @@ class TowerDefenseGame extends Phaser.Scene {
 
     endWave() {
         this.waveManager.endWave();
+        // Reset game speed to 1x at the end of each round
+        this.setGameSpeed(1);
         if (this.uiManager && this.uiManager.updateWaveControlButtons) {
             this.uiManager.updateWaveControlButtons();
         }

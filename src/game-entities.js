@@ -5,7 +5,8 @@ class Tower extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y, towerType) {
         const config = GameConfig.TOWERS[towerType];
         super(scene, x, y, config.spriteKey);
-        
+        // Always clear tint so SVG colors are correct (especially for multishot)
+        this.clearTint();
         this.scene = scene;
         this.towerType = towerType;
         this.damage = config.damage;
@@ -13,6 +14,9 @@ class Tower extends Phaser.GameObjects.Sprite {
         this.fireRate = config.fireRate;
         this.level = 1;
         this.lastFired = 0;
+
+        // Track total money spent on this tower (purchase + upgrades)
+        this.moneySpent = config.cost;
         
         // New stats tracking
         this.shotsFired = 0;
@@ -179,7 +183,8 @@ class Tower extends Phaser.GameObjects.Sprite {
         this.level++;
         this.damage += config.damageIncrease;
         this.range += config.rangeIncrease;
-        // For multishot, add another projectile (handled in shoot)
+        // Track upgrade cost for sell refund
+        this.moneySpent += upgradeCost;
         // Deduct money
         this.scene.money -= upgradeCost;
         // Emit money change event
@@ -191,6 +196,11 @@ class Tower extends Phaser.GameObjects.Sprite {
             this.rangeGraphics.strokeCircle(this.x, this.y, this.range);
         }
         return true;
+    }
+
+    // Calculate sell value (70% of all money spent)
+    getSellValue() {
+        return Math.floor(this.moneySpent * 0.7);
     }
 
     select() {
@@ -245,7 +255,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         // Calculate stats based on wave
         this.health = config.baseHealth + (wave - 1) * config.healthIncrease;
         this.maxHealth = this.health;
-        this.speed = config.baseSpeed + (wave - 1) * config.speedIncrease;
+        // Store the true base speed for consistent speed scaling
+        this.baseSpeed = config.baseSpeed + (wave - 1) * config.speedIncrease;
+        // Always set speed based on baseSpeed and current multiplier
+        this.speed = this.baseSpeed * (scene._enemySpeedMult || 1);
         this.value = config.baseValue + (wave - 1) * config.valueIncrease;
         this.damageToPlayer = config.damageToPlayer;
         
@@ -356,6 +369,9 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (this.pathIndex >= path.length - 1) {
             // Enemy reached the end
             this.scene.health -= this.damageToPlayer;
+            if (this.scene && this.scene.uiManager && this.scene.uiManager.updateUI) {
+                this.scene.uiManager.updateUI();
+            }
             this.destroy();
             return false; // Enemy destroyed
         }

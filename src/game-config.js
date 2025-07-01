@@ -142,7 +142,7 @@ const GameConfig = {
             valueIncrease: 1,
             healthBarWidth: 20,
             healthBarHeight: 4,
-            damageToPlayer: 10
+            damageToPlayer: 5
         },
         strong: {
             spriteKey: 'strongEnemy',
@@ -166,7 +166,7 @@ const GameConfig = {
             valueIncrease: 10,
             healthBarWidth: 40,
             healthBarHeight: 6,
-            damageToPlayer: 50,
+            damageToPlayer: 90,
             scale: 1.2,
             spawnWave: 10
         },
