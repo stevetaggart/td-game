@@ -1,4 +1,53 @@
 class TowerDefenseGame extends Phaser.Scene {
+    // Pause/resume and speed control for UIManager
+    pauseGame() {
+        this._isPaused = true;
+        this.physics.world.isPaused = true;
+        this.time.timeScale = 0;
+        if (this.waveManager && this.waveManager.spawnTimer) this.waveManager.spawnTimer.paused = true;
+    }
+
+    resumeGame() {
+        this._isPaused = false;
+        this.physics.world.isPaused = false;
+        this.time.timeScale = this._gameSpeed || 1;
+        if (this.waveManager && this.waveManager.spawnTimer) this.waveManager.spawnTimer.paused = false;
+    }
+
+    setGameSpeed(mult) {
+        this._gameSpeed = mult;
+        if (!this.physics.world.isPaused) {
+            this.time.timeScale = mult;
+        }
+
+        // Adjust tower fire rates
+        if (this.towers && this.towers.children && this.towers.children.entries) {
+            this.towers.children.entries.forEach(tower => {
+                if (!tower._originalFireRate) {
+                    tower._originalFireRate = tower.fireRate;
+                }
+                if (mult === 1) {
+                    tower.fireRate = tower._originalFireRate;
+                } else {
+                    tower.fireRate = tower._originalFireRate / mult;
+                }
+            });
+        }
+
+        // Adjust enemy speeds
+        if (this.enemies && this.enemies.children && this.enemies.children.entries) {
+            this.enemies.children.entries.forEach(enemy => {
+                if (!enemy._originalSpeed) {
+                    enemy._originalSpeed = enemy.speed;
+                }
+                if (mult === 1) {
+                    enemy.speed = enemy._originalSpeed;
+                } else {
+                    enemy.speed = enemy._originalSpeed * mult;
+                }
+            });
+        }
+    }
     constructor() {
         super({ key: 'TowerDefenseGame' });
     }
@@ -222,9 +271,9 @@ class TowerDefenseGame extends Phaser.Scene {
         this.uiManager.updateUI();
         this.uiManager.updateAllButtonStates();
     }
-
     update(time, delta) {
         if (this.gameStateManager.gameOver) return;
+        if (this._isPaused) return;
 
         // Move enemies
         this.enemies.children.entries.forEach(enemy => {
@@ -271,18 +320,22 @@ class TowerDefenseGame extends Phaser.Scene {
         if (this.gameStateManager.health <= 0) {
             this.endGame();
         }
-
-        this.uiManager.updateUI();
     }
 
     startWave() {
         this.waveManager.startWave();
         // Create wave start effect
         this.effectsManager.createWaveStartEffect(this.waveManager.currentWave);
+        if (this.uiManager && this.uiManager.updateWaveControlButtons) {
+            this.uiManager.updateWaveControlButtons();
+        }
     }
 
     endWave() {
         this.waveManager.endWave();
+        if (this.uiManager && this.uiManager.updateWaveControlButtons) {
+            this.uiManager.updateWaveControlButtons();
+        }
     }
 
     upgradeTower() {

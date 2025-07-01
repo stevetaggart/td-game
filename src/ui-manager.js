@@ -6,6 +6,12 @@ class UIManager {
         this.upgradeButton = null; // Separate property for upgrade button
         this.startWaveButton = null;
         this.gameOverScreen = null;
+
+        // New: Play/Pause and 2x Speed buttons
+        this.playPauseButton = null;
+        this.speedButton = null;
+        this.playPauseState = 'play'; // 'play' or 'pause'
+        this.speedState = 1; // 1 or 2
         
         // UI text elements
         this.healthText = null;
@@ -137,6 +143,8 @@ class UIManager {
         // Create upgrade button separately
         this.createUpgradeButton();
         this.createStartWaveButton();
+        this.createPlayPauseAndSpeedButtons();
+        this.updateWaveControlButtons();
     }
 
     createTowerButtons() {
@@ -363,6 +371,7 @@ class UIManager {
 
         this.startWaveButton.on('pointerup', () => {
             if (!this.scene.waveActive && !this.scene.gameOver) {
+                this.updateWaveControlButtons();
                 this.scene.startWave();
                 startWaveGlow.setVisible(true);
                 this.startWaveButton.setFillStyle(GameConfig.COLORS.BUTTON_GREEN_HOVER);
@@ -371,43 +380,124 @@ class UIManager {
 
         // Store reference to glow
         this.startWaveButton.glow = startWaveGlow;
+        // Store reference to container for visibility toggling
+        this.startWaveButton.parentContainer = startWaveContainer;
+    }
+
+    createPlayPauseAndSpeedButtons() {
+        // Container for both buttons
+        this.waveControlContainer = this.scene.add.container(GameConfig.UI.startWaveButtonX, GameConfig.UI.startWaveButtonY);
+        this.waveControlContainer.setVisible(false);
+
+        // Play/Pause button
+        this.playPauseButton = this.scene.add.rectangle(-40, 0, 60, GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0.5)
+            .setInteractive();
+        this.playPauseText = this.scene.add.text(-40, 0, '⏸', {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: '#fff',
+            fontFamily: 'Arial',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        // 2x Speed button
+        this.speedButton = this.scene.add.rectangle(40, 0, 60, GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0.5)
+            .setInteractive();
+        this.speedText = this.scene.add.text(40, 0, '2x', {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: '#fff',
+            fontFamily: 'Arial',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        this.waveControlContainer.add([this.playPauseButton, this.playPauseText, this.speedButton, this.speedText]);
+
+        // Play/Pause logic
+        this.playPauseButton.on('pointerup', () => {
+            if (this.scene.gameOver) return;
+            if (this.playPauseState === 'play') {
+                this.scene.pauseGame();
+                this.playPauseState = 'pause';
+                this.playPauseText.setText('▶️');
+            } else {
+                this.scene.resumeGame();
+                this.playPauseState = 'play';
+                this.playPauseText.setText('⏸');
+            }
+        });
+
+        // 2x Speed logic
+        this.speedButton.on('pointerup', () => {
+            if (this.scene.gameOver) return;
+            if (this.speedState === 1) {
+                this.scene.setGameSpeed(2);
+                this.speedState = 2;
+                this.speedText.setText('1x');
+            } else {
+                this.scene.setGameSpeed(1);
+                this.speedState = 1;
+                this.speedText.setText('2x');
+            }
+        });
+    }
+
+    updateWaveControlButtons() {
+        // Show Start Wave button if not active, else show play/pause and speed
+        if (this.scene.waveActive && !this.scene.gameOver) {
+            this.startWaveButton.parentContainer && this.startWaveButton.parentContainer.setVisible(false);
+            this.waveControlContainer.setVisible(true);
+        } else {
+            this.startWaveButton.parentContainer && this.startWaveButton.parentContainer.setVisible(true);
+            this.waveControlContainer.setVisible(false);
+            // Reset play/pause and speed button states
+            this.playPauseState = 'play';
+            this.playPauseText.setText('⏸');
+            this.speedState = 1;
+            this.speedText.setText('2x');
+        }
     }
 
     createGameOverScreen() {
         this.gameOverScreen = this.scene.add.container(GameConfig.GAME_WIDTH / 2, GameConfig.GAME_HEIGHT / 2);
         this.gameOverScreen.setVisible(false);
 
+        // Set a high depth so the game over screen is above towers/enemies
+        this.gameOverScreen.setDepth(9999);
+
         const background = this.scene.add.rectangle(0, 0, 600, 400, GameConfig.COLORS.UI_PANEL, 0.9)
-            .setOrigin(0.5);
+            .setOrigin(0.5)
+            .setDepth(9999);
 
         const gameOverText = this.scene.add.text(0, -150, '💀 GAME OVER 💀', {
             fontSize: GameConfig.UI.gameOverFontSize,
             fill: '#fff'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setDepth(9999);
 
         this.finalWaveText = this.scene.add.text(0, -80, 'Final Wave: 0', {
             fontSize: GameConfig.UI.gameOverStatsFontSize,
             fill: '#fff'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setDepth(9999);
 
         this.towersBuiltText = this.scene.add.text(0, -20, 'Towers Built: 0', {
             fontSize: GameConfig.UI.gameOverStatsFontSize,
             fill: '#fff'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setDepth(9999);
 
         this.enemiesDefeatedText = this.scene.add.text(0, 40, 'Enemies Defeated: 0', {
             fontSize: GameConfig.UI.gameOverStatsFontSize,
             fill: '#fff'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setDepth(9999);
 
         const restartButton = this.scene.add.rectangle(0, 120, 300, 60, GameConfig.COLORS.BUTTON_GREEN)
             .setOrigin(0.5)
-            .setInteractive();
+            .setInteractive()
+            .setDepth(9999);
 
         const restartButtonText = this.scene.add.text(0, 120, '🔄 Restart Game', {
             fontSize: GameConfig.UI.gameOverStatsFontSize,
             fill: '#fff'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setDepth(9999);
 
         restartButton.on('pointerdown', () => {
             this.scene.restartGame();
@@ -825,7 +915,10 @@ class UIManager {
     }
 }
 
-// Export for use in other files
+// Export for Node/CommonJS and also attach to window for browser
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = UIManager;
-} 
+}
+if (typeof window !== 'undefined') {
+    window.UIManager = UIManager;
+}
