@@ -108,22 +108,22 @@ class UIManager {
             .setOrigin(0, 0);
         
         // Stats text - arranged horizontally with larger font
-        this.healthText = this.scene.add.text(40, 25, 'Health: 100', {
+        this.healthText = this.scene.add.text(40, 25, `Health: ${this.scene.health}`, {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.HEALTH_TEXT
         }).setOrigin(0, 0);
-        
-        this.moneyText = this.scene.add.text(300, 25, 'Money: 100', {
+
+        this.moneyText = this.scene.add.text(300, 25, `Money: ${this.scene.money}`, {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.MONEY_TEXT
         }).setOrigin(0, 0);
-        
-        this.waveText = this.scene.add.text(560, 25, 'Wave: 1', {
+
+        this.waveText = this.scene.add.text(560, 25, `Wave: ${this.scene.wave}`, {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.WAVE_TEXT
         }).setOrigin(0, 0);
-        
-        this.enemiesText = this.scene.add.text(820, 25, 'Enemies: 10', {
+
+        this.enemiesText = this.scene.add.text(820, 25, `Enemies: ${this.scene.enemiesInWave - this.scene.enemiesSpawned}` , {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.ENEMIES_TEXT
         }).setOrigin(0, 0);

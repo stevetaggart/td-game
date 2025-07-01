@@ -55,10 +55,7 @@ class Tower extends Phaser.GameObjects.Sprite {
     getUpgradeCost() {
         const config = GameConfig.TOWERS[this.towerType];
         let baseUpgradeCost = config.upgradeCost;
-        // Multishot upgrades are twice as expensive as normal upgrades
-        if (this.towerType === 'multishotTower') {
-            baseUpgradeCost = config.upgradeCost * 2;
-        }
+        // No extra multiplier needed; config already sets correct cost for each tower
         return Math.floor(baseUpgradeCost + (this.level - 1) * (baseUpgradeCost * 0.5));
     }
 
