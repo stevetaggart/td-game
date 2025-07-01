@@ -337,6 +337,8 @@ class TowerPlacementManager {
             spriteKey = 'rapidTower';
         } else if (this.selectedTowerType === 'cannonTower') {
             spriteKey = 'cannonTower';
+        } else if (this.selectedTowerType === 'multishotTower') {
+            spriteKey = 'multishotTower';
         }
         this.ghostTower = this.scene.add.sprite(x, y, spriteKey);
         this.ghostTower.setAlpha(GameConfig.GAME.ghostTowerAlpha);

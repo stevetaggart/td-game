@@ -1,3 +1,5 @@
+// Multishot ghost colors
+// (add these inside COLORS below)
 // Game Configuration and Constants
 const GameConfig = {
     // Game dimensions and UI
@@ -10,6 +12,11 @@ const GameConfig = {
     
     // Colors
     COLORS: {
+        // Multishot ghost colors
+        GHOST_MULTISHOT_BASE: 0x6C63FF,
+        GHOST_MULTISHOT_CORE: 0xF9A825,
+        GHOST_MULTISHOT_BARREL: 0x3F3D56,
+        GHOST_MULTISHOT_CENTER: 0xFFFFFF,
         BACKGROUND: '#2c3e50',
         UI_PANEL: 0x000000,
         UI_PANEL_ALPHA: 0.7,
@@ -67,6 +74,21 @@ const GameConfig = {
     
     // Tower configurations
     TOWERS: {
+        multishotTower: {
+            name: 'Multishot',
+            cost: 100,
+            damage: 15,
+            range: 90,
+            fireRate: 1200,
+            spriteKey: 'multishotTower', // Now uses its own sprite
+            ghostSpriteKey: 'ghostMultishotTower',
+            bulletTexture: 'bullet',
+            upgradeCost: 60, // Twice as expensive as normal upgrades
+            damageIncrease: 10,
+            rangeIncrease: 10,
+            baseProjectiles: 3,
+            projectileSpread: 30 // degrees
+        },
         basicTower: {
             name: 'Basic Tower',
             cost: 20,
@@ -225,6 +247,7 @@ const GameConfig = {
         basicTower: 'assets/basic_tower_topdown_40x40.svg',
         rapidTower: 'assets/rapid_tower_topdown_40x40.svg',
         cannonTower: 'assets/canon_tower_topdown_40x40.svg',
+        multishotTower: 'assets/multishot_tower_topdown_40x40.svg',
         enemy: 'assets/enemy_basic.svg',
         strongEnemy: 'assets/enemy_strong.svg',
         bossEnemy: 'assets/enemy_boss.svg',
@@ -282,4 +305,4 @@ const GameConfig = {
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = GameConfig;
-} 
+}

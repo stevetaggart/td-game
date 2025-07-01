@@ -148,50 +148,80 @@ class UIManager {
     }
 
     createTowerButtons() {
-        const buttonWidth = GameConfig.UI.buttonWidth;
-        const buttonSpacing = GameConfig.UI.buttonSpacing;
-        const startX = GameConfig.UI.buttonStartX;
-        const buttonY = GameConfig.UI.buttonY;
+        // Place all tower and upgrade buttons evenly from the left, not overlapping Start Wave
+        const totalButtons = 5; // 4 towers + 1 upgrade
+        const buttonWidth = 110;
+        const buttonHeight = 48;
+        const leftMargin = 24;
+        // Find the left edge of the Start Wave button (centered)
+        const startWaveX = GameConfig.UI.startWaveButtonX || (GameConfig.GAME_WIDTH / 2);
+        const startWaveWidth = GameConfig.UI.startWaveButtonWidth || 220;
+        const rightLimit = startWaveX - (startWaveWidth / 2) - 16; // 16px gap from Start Wave
+        // Compute max available width for all buttons
+        const availableWidth = rightLimit - leftMargin;
+        // Compute spacing so all buttons fit evenly
+        const spacing = (availableWidth - (buttonWidth * totalButtons)) / (totalButtons - 1);
+        const buttonY = GameConfig.GAME_AREA_BOTTOM + (GameConfig.UI_BOTTOM_HEIGHT - buttonHeight) / 2;
 
-        // Create tower buttons with new spacing (only actual towers)
-        this.towerButtons.push(this.createTowerButton(startX, buttonY, 'Basic Tower ($20)', 'basicTower', 20));
-        this.towerButtons.push(this.createTowerButton(startX + buttonWidth + buttonSpacing, buttonY, 'Rapid Fire ($40)', 'rapidTower', 40));
-        this.towerButtons.push(this.createTowerButton(startX + (buttonWidth + buttonSpacing) * 2, buttonY, 'Cannon ($60)', 'cannonTower', 60));
+        // Store for use in upgrade button
+        this._towerButtonWidth = buttonWidth;
+        this._towerButtonHeight = buttonHeight;
+        this._towerButtonSpacing = spacing;
+        this._towerButtonStartX = leftMargin;
+
+        // Update config for use in button creation
+        GameConfig.UI.buttonWidth = buttonWidth;
+        GameConfig.UI.buttonHeight = buttonHeight;
+        GameConfig.UI.buttonSpacing = spacing;
+        GameConfig.UI.buttonStartX = leftMargin;
+        GameConfig.UI.buttonY = buttonY;
+
+        // Place all tower buttons
+        this.towerButtons.push(this.createTowerButton(leftMargin + (buttonWidth + spacing) * 0, buttonY, 'Basic Tower ($20)', 'basicTower', 20, buttonWidth, buttonHeight));
+        this.towerButtons.push(this.createTowerButton(leftMargin + (buttonWidth + spacing) * 1, buttonY, 'Rapid Fire ($40)', 'rapidTower', 40, buttonWidth, buttonHeight));
+        this.towerButtons.push(this.createTowerButton(leftMargin + (buttonWidth + spacing) * 2, buttonY, 'Cannon ($60)', 'cannonTower', 60, buttonWidth, buttonHeight));
+        this.towerButtons.push(this.createTowerButton(leftMargin + (buttonWidth + spacing) * 3, buttonY, 'Multishot ($100)', 'multishotTower', 100, buttonWidth, buttonHeight));
+        // The upgrade button will be placed next in createUpgradeButton
     }
 
-    createTowerButton(x, y, text, type, cost) {
+    createTowerButton(x, y, text, type, cost, width, height) {
+        // Use provided width/height or fallback to config
+        width = width || GameConfig.UI.buttonWidth;
+        height = height || GameConfig.UI.buttonHeight;
         const buttonContainer = this.scene.add.container(x, y);
-        
-        // Create button background with reduced width
-        const button = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth, GameConfig.UI.buttonHeight, 
+
+        // Create button background
+        const button = this.scene.add.rectangle(0, 0, width, height, 
             GameConfig.COLORS.BUTTON_BLUE)
             .setOrigin(0, 0)
             .setInteractive();
 
         // Add button shadow
-        const shadow = this.scene.add.rectangle(2, 2, GameConfig.UI.buttonWidth, GameConfig.UI.buttonHeight, 
+        const shadow = this.scene.add.rectangle(2, 2, width, height, 
             GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
             .setOrigin(0, 0);
 
         // Create selection indicator (initially hidden)
-        const selectionIndicator = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth + 4, 
-            GameConfig.UI.buttonHeight + 4, GameConfig.COLORS.SELECTION_YELLOW, 0.5)
+        const selectionIndicator = this.scene.add.rectangle(0, 0, width + 4, 
+            height + 4, GameConfig.COLORS.SELECTION_YELLOW, 0.5)
             .setOrigin(0, 0)
             .setVisible(false);
 
         // Add glow effect for selected state
-        const glow = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth + 4, 
-            GameConfig.UI.buttonHeight + 4, GameConfig.COLORS.SELECTION_GLOW, 0.2)
+        const glow = this.scene.add.rectangle(0, 0, width + 4, 
+            height + 4, GameConfig.COLORS.SELECTION_GLOW, 0.2)
             .setOrigin(0, 0)
             .setVisible(false);
 
-        // Add text
-        const buttonText = this.scene.add.text(20, 25, text, {
-            fontSize: GameConfig.UI.buttonFontSize,
+        // Add text (smaller font, centered)
+        const buttonText = this.scene.add.text(width / 2, height / 2, text, {
+            fontSize: '15px',
             fill: '#fff',
             fontFamily: 'Arial',
-            fontStyle: 'bold'
-        }).setOrigin(0, 0.5);
+            fontStyle: 'bold',
+            align: 'center',
+            wordWrap: { width: width - 12 }
+        }).setOrigin(0.5, 0.5);
 
         // Add all elements to container
         buttonContainer.add([shadow, selectionIndicator, glow, button, buttonText]);
@@ -571,50 +601,54 @@ class UIManager {
     }
 
     createUpgradeButton() {
-        const buttonWidth = GameConfig.UI.buttonWidth;
-        const buttonSpacing = GameConfig.UI.buttonSpacing;
-        const startX = GameConfig.UI.buttonStartX;
+        // Place upgrade button after the last tower button, using the same shrunken size/spacing
+        const buttonWidth = this._towerButtonWidth || 110;
+        const buttonHeight = this._towerButtonHeight || 48;
+        const buttonSpacing = this._towerButtonSpacing || 16;
+        const startX = this._towerButtonStartX || 24;
         const buttonY = GameConfig.UI.buttonY;
-        
-        // Position upgrade button after the tower buttons
-        const upgradeX = startX + (buttonWidth + buttonSpacing) * 3;
-        
-        this.upgradeButton = this.createUpgradeButtonElement(upgradeX, buttonY, 'Upgrade ($30)', 30);
+        // Place after last tower button
+        const upgradeX = startX + (buttonWidth + buttonSpacing) * 4;
+        this.upgradeButton = this.createUpgradeButtonElement(upgradeX, buttonY, 'Upgrade ($30)', 30, buttonWidth, buttonHeight);
     }
 
-    createUpgradeButtonElement(x, y, text, cost) {
+    createUpgradeButtonElement(x, y, text, cost, width, height) {
+        width = width || GameConfig.UI.buttonWidth;
+        height = height || GameConfig.UI.buttonHeight;
         const buttonContainer = this.scene.add.container(x, y);
-        
-        // Create button background with reduced width
-        const button = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth, GameConfig.UI.buttonHeight, 
+
+        // Create button background
+        const button = this.scene.add.rectangle(0, 0, width, height, 
             GameConfig.COLORS.BUTTON_BLUE)
             .setOrigin(0, 0)
             .setInteractive();
 
         // Add button shadow
-        const shadow = this.scene.add.rectangle(2, 2, GameConfig.UI.buttonWidth, GameConfig.UI.buttonHeight, 
+        const shadow = this.scene.add.rectangle(2, 2, width, height, 
             GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
             .setOrigin(0, 0);
 
         // Create selection indicator (initially hidden)
-        const selectionIndicator = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth + 4, 
-            GameConfig.UI.buttonHeight + 4, GameConfig.COLORS.SELECTION_YELLOW, 0.5)
+        const selectionIndicator = this.scene.add.rectangle(0, 0, width + 4, 
+            height + 4, GameConfig.COLORS.SELECTION_YELLOW, 0.5)
             .setOrigin(0, 0)
             .setVisible(false);
 
         // Add glow effect for selected state
-        const glow = this.scene.add.rectangle(0, 0, GameConfig.UI.buttonWidth + 4, 
-            GameConfig.UI.buttonHeight + 4, GameConfig.COLORS.SELECTION_GLOW, 0.2)
+        const glow = this.scene.add.rectangle(0, 0, width + 4, 
+            height + 4, GameConfig.COLORS.SELECTION_GLOW, 0.2)
             .setOrigin(0, 0)
             .setVisible(false);
 
-        // Add text
-        const buttonText = this.scene.add.text(20, 25, text, {
-            fontSize: GameConfig.UI.buttonFontSize,
+        // Add text (smaller font, centered)
+        const buttonText = this.scene.add.text(width / 2, height / 2, text, {
+            fontSize: '15px',
             fill: '#fff',
             fontFamily: 'Arial',
-            fontStyle: 'bold'
-        }).setOrigin(0, 0.5);
+            fontStyle: 'bold',
+            align: 'center',
+            wordWrap: { width: width - 12 }
+        }).setOrigin(0.5, 0.5);
 
         // Add all elements to container
         buttonContainer.add([shadow, selectionIndicator, glow, button, buttonText]);

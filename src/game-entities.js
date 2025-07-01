@@ -50,8 +50,11 @@ class Tower extends Phaser.GameObjects.Sprite {
     // Calculate upgrade cost based on current level
     getUpgradeCost() {
         const config = GameConfig.TOWERS[this.towerType];
-        const baseUpgradeCost = config.upgradeCost;
-        // Each level increases the cost by 50% of the base cost
+        let baseUpgradeCost = config.upgradeCost;
+        // Multishot upgrades are twice as expensive as normal upgrades
+        if (this.towerType === 'multishotTower') {
+            baseUpgradeCost = config.upgradeCost * 2;
+        }
         return Math.floor(baseUpgradeCost + (this.level - 1) * (baseUpgradeCost * 0.5));
     }
 
@@ -106,7 +109,35 @@ class Tower extends Phaser.GameObjects.Sprite {
         if (enemiesInRange.length > 0) {
             const target = enemiesInRange[0];
             const config = GameConfig.TOWERS[this.towerType];
-            
+
+            // Multishot: shoot multiple projectiles in a spread
+            if (this.towerType === 'multishotTower') {
+                // Calculate number of projectiles: base + (level-1)
+                const numProjectiles = (config.baseProjectiles || 3) + (this.level - 1);
+                const spreadAngle = config.projectileSpread || 30; // degrees
+                const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, target.x, target.y);
+                const halfSpread = ((numProjectiles - 1) * spreadAngle * Math.PI / 180) / 2;
+                let bullets = [];
+                for (let i = 0; i < numProjectiles; i++) {
+                    // Evenly space projectiles within the spread
+                    const angle = baseAngle - halfSpread + i * (spreadAngle * Math.PI / 180);
+                    // Fake a target at this angle
+                    const fakeTarget = {
+                        x: this.x + Math.cos(angle) * this.range,
+                        y: this.y + Math.sin(angle) * this.range
+                    };
+                    const bullet = new Bullet(this.scene, this.x, this.y, fakeTarget, this.damage, this.range, config.bulletTexture, this);
+                    bullets.push(bullet);
+                }
+                this.lastFired = time;
+                this.recordShot();
+                this.scene.sound.play('shot', { volume: 0.7 });
+                if (this.scene.effectsManager) {
+                    this.scene.effectsManager.createMuzzleFlash(this.x, this.y);
+                }
+                return bullets;
+            }
+
             // Rotate rapid and cannon towers to face the enemy
             if (this.towerType === 'rapidTower' || this.towerType === 'cannonTower') {
                 const angleToTarget = Phaser.Math.Angle.Between(this.x, this.y, target.x, target.y);
@@ -141,29 +172,24 @@ class Tower extends Phaser.GameObjects.Sprite {
     upgrade() {
         const config = GameConfig.TOWERS[this.towerType];
         const upgradeCost = this.getUpgradeCost();
-        
         // Check if player has enough money
         if (this.scene.money < upgradeCost) {
             return false;
         }
-        
         this.level++;
         this.damage += config.damageIncrease;
         this.range += config.rangeIncrease;
-        
+        // For multishot, add another projectile (handled in shoot)
         // Deduct money
         this.scene.money -= upgradeCost;
-        
         // Emit money change event
         window.gameEvents.emit('moneyChanged', { newAmount: this.scene.money, change: -upgradeCost });
-        
         // Update range graphics
         if (this.rangeGraphics) {
             this.rangeGraphics.clear();
             this.rangeGraphics.lineStyle(1, 0xffffff, 0.3);
             this.rangeGraphics.strokeCircle(this.x, this.y, this.range);
         }
-        
         return true;
     }
 
@@ -358,27 +384,33 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     takeDamage(damage) {
         this.health -= damage;
-        
+
         if (this.health <= 0) {
-            this.scene.money += this.value;
-            this.scene.enemiesDefeated++;
-            
-            // Emit money change event
-            if (typeof window.gameEvents !== 'undefined') {
-                window.gameEvents.emit('moneyChanged', { newAmount: this.scene.money, change: this.value });
+            // Add money and increment enemies defeated using GameStateManager for consistency
+            if (this.scene.gameStateManager) {
+                this.scene.gameStateManager.addMoney(this.value);
+                this.scene.gameStateManager.incrementEnemiesDefeated();
+                // Also update scene.money for UI and legacy code compatibility
+                this.scene.money = this.scene.gameStateManager.money;
+                this.scene.enemiesDefeated = this.scene.gameStateManager.enemiesDefeated;
+            } else {
+                this.scene.money += this.value;
+                this.scene.enemiesDefeated++;
+                if (typeof window.gameEvents !== 'undefined') {
+                    window.gameEvents.emit('moneyChanged', { newAmount: this.scene.money, change: this.value });
+                }
             }
-            
             this.destroy();
             return true; // Enemy oofed
         }
-        
+
         // Update health bar
         if (this.isBoss) {
             this.updateBossHealthBar();
         } else {
             this.updateHealthBar();
         }
-        
+
         return false; // Enemy still alive
     }
 
@@ -439,26 +471,35 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     onHitEnemy(enemy) {
         if (!enemy.active) return;
-        
+
         // Record the hit for the tower
         if (this.tower) {
             this.tower.recordHit();
         }
-        
+
         const oofed = enemy.takeDamage(this.damage);
-        
+
         // Record the oof for the tower
         if (oofed && this.tower) {
             this.tower.recordOof();
         }
-        
-        if (oofed && this.scene.effectsManager) {
-            if (enemy.enemyType === 'superBoss') {
-                this.scene.effectsManager.createSuperBossDeathEffect(enemy.x, enemy.y);
-            } else if (enemy.isBoss) {
-                this.scene.effectsManager.createBossDeathEffect(enemy.x, enemy.y);
-            } else {
-                this.scene.effectsManager.createDeathEffect(enemy.x, enemy.y);
+
+        if (oofed) {
+            // Ensure money and UI update immediately after enemy death
+            if (this.scene && this.scene.uiManager && this.scene.uiManager.updateUI) {
+                this.scene.uiManager.updateUI();
+            }
+            if (this.scene && typeof window.gameEvents !== 'undefined') {
+                window.gameEvents.emit('moneyChanged', { newAmount: this.scene.money, change: enemy.value });
+            }
+            if (this.scene.effectsManager) {
+                if (enemy.enemyType === 'superBoss') {
+                    this.scene.effectsManager.createSuperBossDeathEffect(enemy.x, enemy.y);
+                } else if (enemy.isBoss) {
+                    this.scene.effectsManager.createBossDeathEffect(enemy.x, enemy.y);
+                } else {
+                    this.scene.effectsManager.createDeathEffect(enemy.x, enemy.y);
+                }
             }
         }
         this.destroy();
@@ -468,4 +509,4 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { Tower, Enemy, Bullet };
-} 
+}

@@ -57,6 +57,7 @@ class TowerDefenseGame extends Phaser.Scene {
         this.load.image('basicTower', GameConfig.ASSETS.basicTower);
         this.load.image('rapidTower', GameConfig.ASSETS.rapidTower);
         this.load.image('cannonTower', GameConfig.ASSETS.cannonTower);
+        this.load.image('multishotTower', GameConfig.ASSETS.multishotTower);
         
         // Load the enemy path SVG
         this.load.image('enemyPath', GameConfig.ASSETS.enemyPath);
@@ -83,6 +84,27 @@ class TowerDefenseGame extends Phaser.Scene {
     }
 
     createGhostTowerSprites() {
+        // Ghost Multishot Tower
+        const graphics4 = this.add.graphics();
+        graphics4.fillStyle(GameConfig.COLORS.GHOST_MULTISHOT_BASE, GameConfig.COLORS.GHOST_TOWER_ALPHA);
+        graphics4.fillRect(8, 8, 24, 24);
+        graphics4.lineStyle(2, GameConfig.COLORS.GHOST_MULTISHOT_BARREL, GameConfig.COLORS.GHOST_TOWER_ALPHA);
+        graphics4.strokeRect(8, 8, 24, 24);
+        graphics4.fillStyle(GameConfig.COLORS.GHOST_MULTISHOT_CORE, GameConfig.COLORS.GHOST_TOWER_ALPHA);
+        graphics4.fillCircle(20, 20, 7);
+        graphics4.lineStyle(2, GameConfig.COLORS.GHOST_MULTISHOT_BARREL, GameConfig.COLORS.GHOST_TOWER_ALPHA);
+        graphics4.strokeCircle(20, 20, 7);
+        // Barrels
+        graphics4.fillStyle(GameConfig.COLORS.GHOST_MULTISHOT_BARREL, GameConfig.COLORS.GHOST_TOWER_ALPHA);
+        graphics4.fillRect(18, 4, 4, 10);
+        graphics4.fillRect(4, 18, 10, 4);
+        graphics4.fillRect(26, 18, 10, 4);
+        graphics4.fillRect(18, 26, 4, 10);
+        // Center
+        graphics4.fillStyle(GameConfig.COLORS.GHOST_MULTISHOT_CENTER, GameConfig.COLORS.GHOST_TOWER_ALPHA);
+        graphics4.fillCircle(20, 20, 3);
+        graphics4.generateTexture('ghostMultishotTower', 40, 40);
+        graphics4.destroy();
         // Ghost Basic Tower (semi-transparent)
         const graphics1 = this.add.graphics();
         graphics1.fillStyle(GameConfig.COLORS.GHOST_BASIC_BASE, GameConfig.COLORS.GHOST_TOWER_ALPHA);
@@ -287,12 +309,19 @@ class TowerDefenseGame extends Phaser.Scene {
         // Update tower rotations and shooting
         this.towers.children.entries.forEach(tower => {
             tower.updateRotation();
-            const bullet = tower.shoot(time);
-            if (bullet) {
-                this.bullets.add(bullet);
-                // Re-set velocity in case group resets it
-                if (bullet.body) {
-                    bullet.body.setVelocity(bullet.dirX * bullet.speed, bullet.dirY * bullet.speed);
+            const shot = tower.shoot(time);
+            if (Array.isArray(shot)) {
+                // Multishot returns an array of bullets
+                shot.forEach(bullet => {
+                    this.bullets.add(bullet);
+                    if (bullet.body) {
+                        bullet.body.setVelocity(bullet.dirX * bullet.speed, bullet.dirY * bullet.speed);
+                    }
+                });
+            } else if (shot) {
+                this.bullets.add(shot);
+                if (shot.body) {
+                    shot.body.setVelocity(shot.dirX * shot.speed, shot.dirY * shot.speed);
                 }
             }
         });
