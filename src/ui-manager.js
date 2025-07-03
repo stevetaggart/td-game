@@ -887,9 +887,10 @@ class UIManager {
     }
 
     createSoundToggleButton() {
-        const buttonX = GameConfig.GAME_WIDTH - 80; // Position on the right side
-        const buttonY = 25;
-        const buttonSize = 30;
+        const rightMargin = 24; // Distance from right edge of game area
+        const buttonSize = 48; // Match tower button height for consistent spacing
+        const buttonX = GameConfig.GAME_WIDTH - rightMargin - buttonSize / 2; // Position with right margin
+        const buttonY = GameConfig.UI_TOP_HEIGHT / 2; // Center vertically within the stats panel
         
         // Create button container
         const buttonContainer = this.scene.add.container(buttonX, buttonY);
@@ -905,13 +906,14 @@ class UIManager {
             GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
             .setOrigin(0.5, 0.5);
 
-        // Create speaker icons using SVG images
+        // Create speaker icons using SVG images - sized to match tower button text area
+        const iconSize = 32; // Leave 8px padding on top/bottom (48-32)/2 = 8px each side
         const speakerIcon = this.scene.add.image(0, 0, 'speakerOn')
-            .setDisplaySize(20, 20)
+            .setDisplaySize(iconSize, iconSize)
             .setOrigin(0.5, 0.5);
 
         const mutedIcon = this.scene.add.image(0, 0, 'speakerOff')
-            .setDisplaySize(20, 20)
+            .setDisplaySize(iconSize, iconSize)
             .setOrigin(0.5, 0.5);
 
         // Add all elements to container
