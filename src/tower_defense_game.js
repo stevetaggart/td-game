@@ -372,6 +372,10 @@ class TowerDefenseGame extends Phaser.Scene {
         this.towerPlacementManager.upgradeTower();
     }
 
+    sellTower() {
+        this.towerPlacementManager.sellTower();
+    }
+
     createBossSpawnEffect(x, y) {
         this.effectsManager.createBossSpawnEffect(x, y);
     }

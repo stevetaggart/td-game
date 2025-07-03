@@ -29,6 +29,8 @@ const GameConfig = {
         BUTTON_DISABLED: 0x7f8c8d,
         BUTTON_GREEN: 0x2ecc71,
         BUTTON_GREEN_HOVER: 0x27ae60,
+        BUTTON_RED: 0xe74c3c,
+        BUTTON_RED_HOVER: 0xc0392b,
         BUTTON_SHADOW: 0x000000,
         BUTTON_SHADOW_ALPHA: 0.3,
         SELECTION_YELLOW: 0xffff00,

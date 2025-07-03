@@ -469,6 +469,33 @@ class TowerPlacementManager {
             this.scene.uiManager.updateUI();
         }
     }
+
+    sellTower() {
+        if (!this.selectedTower) return;
+
+        // Calculate sell value (70% of total spent)
+        const sellValue = this.selectedTower.getSellValue();
+        
+        // Add money to player
+        this.scene.money += sellValue;
+        
+        // Emit money change event
+        window.gameEvents.emit('moneyChanged', { newAmount: this.scene.money, change: sellValue });
+        
+        // Remove the tower from the game
+        this.scene.towers.remove(this.selectedTower);
+        this.selectedTower.destroy();
+        
+        // Clear selection
+        this.selectedTower = null;
+        this.selectedTowerType = null;
+        
+        // Emit tower deselection event
+        window.gameEvents.emit('towerDeselected', {});
+        
+        // Update UI
+        this.scene.uiManager.updateUI();
+    }
 }
 
 // Export for use in other files

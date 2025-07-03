@@ -13,6 +13,7 @@ class UIManager {
         this.scene = scene;
         this.towerButtons = [];
         this.upgradeButton = null; // Separate property for upgrade button
+        this.sellButton = null; // Separate property for sell button
         this.startWaveButton = null;
         this.gameOverScreen = null;
 
@@ -96,11 +97,13 @@ class UIManager {
         window.gameEvents.on('towerSelected', () => {
             this.updateAllButtonStates();
             this.updateUpgradeButtonText();
+            this.updateSellButtonText();
         });
         
         window.gameEvents.on('towerDeselected', () => {
             this.updateAllButtonStates();
             this.updateUpgradeButtonText();
+            this.updateSellButtonText();
         });
     }
 
@@ -167,8 +170,8 @@ class UIManager {
         this.waveControlGroup.x = GameConfig.GAME_WIDTH - this.waveControlGroup.width - rightMargin;
         this.waveControlGroup.y = buttonY;
         
-        // Position upgrade button so its right edge is one button width to the left of the Start Wave button
-        this.upgradeButtonGroup.x = this.waveControlGroup.x - this._towerButtonWidth - spacing;
+        // Position upgrade button group so its right edge is one button width to the left of the Start Wave button
+        this.upgradeButtonGroup.x = this.waveControlGroup.x - this.upgradeButtonGroup.width - spacing;
         this.upgradeButtonGroup.y = buttonY;
         // Ensure correct button is visible on game start
         this.updateWaveControlButtons();
@@ -195,11 +198,21 @@ class UIManager {
 
     createUpgradeButtonGroup() {
         this.upgradeButtonGroup = this.scene.add.container(0, 0);
-        // Place upgrade button at (0,0) in group
+        
+        // Calculate button spacing and positions
+        const buttonSpacing = 8;
+        const totalWidth = this._towerButtonWidth * 2 + buttonSpacing;
+        
+        // Place upgrade button on the left
         this.upgradeButton = this.createUpgradeButtonElement(0, 0, 'Upgrade ($30)', 30, this._towerButtonWidth, this._towerButtonHeight);
         this.upgradeButtonGroup.add(this.upgradeButton);
-        // In the future: add sell button here
-        this.upgradeButtonGroup.width = this._towerButtonWidth;
+        
+        // Place sell button on the right
+        this.sellButton = this.createSellButtonElement(this._towerButtonWidth + buttonSpacing, 0, 'Sell', 0, this._towerButtonWidth, this._towerButtonHeight);
+        this.upgradeButtonGroup.add(this.sellButton);
+        
+        // Update group dimensions to accommodate both buttons
+        this.upgradeButtonGroup.width = totalWidth;
         this.upgradeButtonGroup.height = this._towerButtonHeight;
     }
 
@@ -655,6 +668,15 @@ class UIManager {
             }
             this.updateUpgradeButtonText();
         }
+        
+        // Update sell button state and text
+        if (this.sellButton) {
+            const button = this.sellButton.list.find(child => child.type === 'Rectangle' && child.input && child.input.enabled);
+            if (button) {
+                this.updateSellButtonState(button);
+            }
+            this.updateSellButtonText();
+        }
     }
 
     createUpgradeButtonElement(x, y, text, cost, width, height) {
@@ -751,6 +773,100 @@ class UIManager {
         return buttonContainer;
     }
 
+    createSellButtonElement(x, y, text, cost, width, height) {
+        width = width || GameConfig.UI.buttonWidth;
+        height = height || GameConfig.UI.buttonHeight;
+        const buttonContainer = this.scene.add.container(x, y);
+
+        // Create button background
+        const button = this.scene.add.rectangle(0, 0, width, height, 
+            GameConfig.COLORS.BUTTON_RED)
+            .setOrigin(0, 0)
+            .setInteractive();
+
+        // Add button shadow
+        const shadow = this.scene.add.rectangle(2, 2, width, height, 
+            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0, 0);
+
+        // Create selection indicator (initially hidden)
+        const selectionIndicator = this.scene.add.rectangle(0, 0, width + 4, 
+            height + 4, GameConfig.COLORS.SELECTION_YELLOW, 0.5)
+            .setOrigin(0, 0)
+            .setVisible(false);
+
+        // Add glow effect for selected state
+        const glow = this.scene.add.rectangle(0, 0, width + 4, 
+            height + 4, GameConfig.COLORS.SELECTION_GLOW, 0.2)
+            .setOrigin(0, 0)
+            .setVisible(false);
+
+        // Add text (smaller font, centered)
+        const buttonText = this.scene.add.text(width / 2, height / 2, text, {
+            fontSize: '15px',
+            fill: '#fff',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            align: 'center',
+            wordWrap: { width: width - 12 }
+        }).setOrigin(0.5, 0.5);
+
+        // Add all elements to container
+        buttonContainer.add([shadow, selectionIndicator, glow, button, buttonText]);
+
+        // Store references
+        button.selectionIndicator = selectionIndicator;
+        button.glow = glow;
+        button.cost = cost;
+        button.type = 'sellTower';
+
+        // Add hover effect
+        button.on('pointerover', () => {
+            if (this.canSellTower(button)) {
+                button.setFillStyle(GameConfig.COLORS.BUTTON_RED_HOVER);
+                this.scene.tweens.add({
+                    targets: button,
+                    scaleX: 1.02,
+                    scaleY: 1.02,
+                    duration: 100,
+                    ease: 'Power2'
+                });
+            } else {
+                button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+                button.setAlpha(0.7);
+            }
+        });
+
+        button.on('pointerout', () => {
+            this.updateSellButtonState(button);
+        });
+
+        // Add press effect
+        button.on('pointerdown', () => {
+            if (this.canSellTower(button)) {
+                this.scene.tweens.add({
+                    targets: button,
+                    scaleX: 0.95,
+                    scaleY: 0.95,
+                    duration: 50,
+                    yoyo: true,
+                    ease: 'Power2'
+                });
+            }
+        });
+
+        button.on('pointerup', () => {
+            if (this.canSellTower(button)) {
+                this.handleSellButtonClick(button);
+            }
+        });
+
+        // Update button state based on tower selection
+        this.updateSellButtonState(button);
+
+        return buttonContainer;
+    }
+
     canAffordUpgradeButton(button) {
         if (!this.scene.selectedTower) return false;
         const upgradeCost = this.scene.selectedTower.getUpgradeCost();
@@ -792,6 +908,61 @@ class UIManager {
         } else {
             button.cost = 0;
             buttonText.setText('Upgrade ($0)');
+        }
+    }
+
+    canSellTower(button) {
+        return this.scene.selectedTower !== null;
+    }
+
+    handleSellButtonClick(button) {
+        if (!this.scene.selectedTower) {
+            // No tower selected, can't sell
+            return;
+        }
+
+        // Remove the tower from the game (this handles money addition and tower removal)
+        this.scene.sellTower();
+        
+        // Clear selection
+        this.scene.selectedTower = null;
+        this.scene.selectedTowerType = null;
+        this.clearTowerButtonSelection();
+        
+        // Update UI
+        this.updateAllButtonStates();
+        this.updateUpgradeButtonText();
+        this.updateSellButtonText();
+    }
+
+    updateSellButtonState(button) {
+        if (!this.scene.selectedTower) {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+            button.setAlpha(0.7);
+        } else {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_RED);
+            button.setAlpha(1);
+        }
+    }
+
+    updateSellButtonText() {
+        if (!this.sellButton) {
+            return;
+        }
+        
+        // Find the button element by looking for the one with type 'sellTower'
+        const button = this.sellButton.list.find(child => child.type === 'sellTower');
+        const buttonText = this.sellButton.list.find(child => child.type === 'Text');
+        
+        if (!button || !buttonText) return;
+        
+        if (this.scene.selectedTower) {
+            const sellValue = this.scene.selectedTower.getSellValue();
+            button.cost = sellValue;
+            buttonText.setText(`Sell ($${sellValue})`);
+        } else {
+            button.cost = 0;
+            buttonText.setText('Sell ($0)');
         }
     }
 
