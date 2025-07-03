@@ -217,11 +217,8 @@ class UIManager {
         // Add both to group, but only one is visible at a time
         this.waveControlGroup.add(this.startWaveButton.parentContainer);
         this.waveControlGroup.add(this.waveControlContainer);
-        // Center group width is max of startWave or waveControlContainer
-        this.waveControlGroup.width = Math.max(
-            this.startWaveButton.parentContainer.width || 220,
-            this.waveControlContainer.width || 120
-        );
+        // Both containers now have the same width (Start Wave button width)
+        this.waveControlGroup.width = GameConfig.UI.startWaveButtonWidth;
         this.waveControlGroup.height = this._towerButtonHeight || 48;
     }
 
@@ -495,6 +492,10 @@ class UIManager {
         }).setOrigin(0.5, 0.5);
 
         this.waveControlContainer.add([this.playPauseButton, this.playPauseText, this.speedButton, this.speedText]);
+        
+        // Set the container width to match the Start Wave button width for consistent positioning
+        this.waveControlContainer.width = groupWidth;
+        this.waveControlContainer.height = groupHeight;
 
         // Play/Pause logic
         this.playPauseButton.on('pointerup', () => {
