@@ -155,17 +155,21 @@ class UIManager {
         this.createWaveControlGroup();
 
         // Arrange groups horizontally
-        // Tower group on left, upgrade group next, wave control group on right
+        // Tower group on left, upgrade group positioned relative to wave control group on right
         const leftMargin = 24;
         const rightMargin = 24;
         const spacing = 16;
         const buttonY = GameConfig.GAME_AREA_BOTTOM + (GameConfig.UI_BOTTOM_HEIGHT - (this._towerButtonHeight || 48)) / 2;
         this.towerButtonGroup.x = leftMargin;
         this.towerButtonGroup.y = buttonY;
-        this.upgradeButtonGroup.x = leftMargin + this.towerButtonGroup.width + spacing;
-        this.upgradeButtonGroup.y = buttonY;
+        
+        // Position wave control group on the right
         this.waveControlGroup.x = GameConfig.GAME_WIDTH - this.waveControlGroup.width - rightMargin;
         this.waveControlGroup.y = buttonY;
+        
+        // Position upgrade button so its right edge is one button width to the left of the Start Wave button
+        this.upgradeButtonGroup.x = this.waveControlGroup.x - this._towerButtonWidth - spacing;
+        this.upgradeButtonGroup.y = buttonY;
         // Ensure correct button is visible on game start
         this.updateWaveControlButtons();
     }
