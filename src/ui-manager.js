@@ -1,3 +1,12 @@
+// --- Tower Button Config ---
+const TOWER_TYPES = [
+    { type: 'basicTower', label: 'Basic Tower ($20)', cost: 20 },
+    { type: 'rapidTower', label: 'Rapid Fire ($40)', cost: 40 },
+    { type: 'cannonTower', label: 'Cannon ($60)', cost: 60 },
+    { type: 'multishotTower', label: 'Multishot ($100)', cost: 100 },
+    // Add new towers here!
+];
+
 // UI Manager Class
 class UIManager {
     constructor(scene) {
@@ -133,55 +142,87 @@ class UIManager {
     }
 
     createButtonPanel() {
-        // Create bottom button panel
+        // Create bottom button panel background
         const buttonPanel = this.scene.add.rectangle(0, GameConfig.GAME_AREA_BOTTOM, GameConfig.GAME_WIDTH, 
             GameConfig.UI_BOTTOM_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
             .setOrigin(0, 0);
 
-        // Create tower buttons
-        this.createTowerButtons();
-        // Create upgrade button separately
-        this.createUpgradeButton();
-        this.createStartWaveButton();
-        this.createPlayPauseAndSpeedButtons();
+        // --- Tower Button Group ---
+        this.createTowerButtonGroup();
+        // --- Upgrade Button Group ---
+        this.createUpgradeButtonGroup();
+        // --- Wave Control Group ---
+        this.createWaveControlGroup();
+
+        // Arrange groups horizontally
+        // Tower group on left, upgrade group next, wave control group on right
+        const leftMargin = 24;
+        const rightMargin = 24;
+        const spacing = 16;
+        const buttonY = GameConfig.GAME_AREA_BOTTOM + (GameConfig.UI_BOTTOM_HEIGHT - (this._towerButtonHeight || 48)) / 2;
+        this.towerButtonGroup.x = leftMargin;
+        this.towerButtonGroup.y = buttonY;
+        this.upgradeButtonGroup.x = leftMargin + this.towerButtonGroup.width + spacing;
+        this.upgradeButtonGroup.y = buttonY;
+        this.waveControlGroup.x = GameConfig.GAME_WIDTH - this.waveControlGroup.width - rightMargin;
+        this.waveControlGroup.y = buttonY;
+        // Ensure correct button is visible on game start
         this.updateWaveControlButtons();
     }
 
-    createTowerButtons() {
-        // Place all tower and upgrade buttons evenly from the left, not overlapping Start Wave
-        const totalButtons = 5; // 4 towers + 1 upgrade
+    createTowerButtonGroup() {
+        this.towerButtonGroup = this.scene.add.container(0, 0);
+        this.towerButtons = [];
         const buttonWidth = 110;
         const buttonHeight = 48;
-        const leftMargin = 24;
-        // Find the left edge of the Start Wave button (centered)
-        const startWaveX = GameConfig.UI.startWaveButtonX || (GameConfig.GAME_WIDTH / 2);
-        const startWaveWidth = GameConfig.UI.startWaveButtonWidth || 220;
-        const rightLimit = startWaveX - (startWaveWidth / 2) - 16; // 16px gap from Start Wave
-        // Compute max available width for all buttons
-        const availableWidth = rightLimit - leftMargin;
-        // Compute spacing so all buttons fit evenly
-        const spacing = (availableWidth - (buttonWidth * totalButtons)) / (totalButtons - 1);
-        const buttonY = GameConfig.GAME_AREA_BOTTOM + (GameConfig.UI_BOTTOM_HEIGHT - buttonHeight) / 2;
-
-        // Store for use in upgrade button
+        const spacing = 16;
+        TOWER_TYPES.forEach((tower, i) => {
+            const btn = this.createTowerButton((buttonWidth + spacing) * i, 0, tower.label, tower.type, tower.cost, buttonWidth, buttonHeight);
+            this.towerButtonGroup.add(btn);
+            this.towerButtons.push(btn);
+        });
+        // Store for layout
         this._towerButtonWidth = buttonWidth;
         this._towerButtonHeight = buttonHeight;
         this._towerButtonSpacing = spacing;
-        this._towerButtonStartX = leftMargin;
+        this.towerButtonGroup.width = TOWER_TYPES.length * buttonWidth + (TOWER_TYPES.length - 1) * spacing;
+        this.towerButtonGroup.height = buttonHeight;
+    }
 
-        // Update config for use in button creation
-        GameConfig.UI.buttonWidth = buttonWidth;
-        GameConfig.UI.buttonHeight = buttonHeight;
-        GameConfig.UI.buttonSpacing = spacing;
-        GameConfig.UI.buttonStartX = leftMargin;
-        GameConfig.UI.buttonY = buttonY;
+    createUpgradeButtonGroup() {
+        this.upgradeButtonGroup = this.scene.add.container(0, 0);
+        // Place upgrade button at (0,0) in group
+        this.upgradeButton = this.createUpgradeButtonElement(0, 0, 'Upgrade ($30)', 30, this._towerButtonWidth, this._towerButtonHeight);
+        this.upgradeButtonGroup.add(this.upgradeButton);
+        // In the future: add sell button here
+        this.upgradeButtonGroup.width = this._towerButtonWidth;
+        this.upgradeButtonGroup.height = this._towerButtonHeight;
+    }
 
-        // Place all tower buttons
-        this.towerButtons.push(this.createTowerButton(leftMargin + (buttonWidth + spacing) * 0, buttonY, 'Basic Tower ($20)', 'basicTower', 20, buttonWidth, buttonHeight));
-        this.towerButtons.push(this.createTowerButton(leftMargin + (buttonWidth + spacing) * 1, buttonY, 'Rapid Fire ($40)', 'rapidTower', 40, buttonWidth, buttonHeight));
-        this.towerButtons.push(this.createTowerButton(leftMargin + (buttonWidth + spacing) * 2, buttonY, 'Cannon ($60)', 'cannonTower', 60, buttonWidth, buttonHeight));
-        this.towerButtons.push(this.createTowerButton(leftMargin + (buttonWidth + spacing) * 3, buttonY, 'Multishot ($100)', 'multishotTower', 100, buttonWidth, buttonHeight));
-        // The upgrade button will be placed next in createUpgradeButton
+    createWaveControlGroup() {
+        this.waveControlGroup = this.scene.add.container(0, 0);
+        // Start wave button (centered in group)
+        this.createStartWaveButton();
+        // Pause and speed buttons (hidden initially)
+        this.createPlayPauseAndSpeedButtons();
+        // Fix: set parentContainer position to (0,0) so it's centered in the group
+        if (this.startWaveButton.parentContainer) {
+            this.startWaveButton.parentContainer.x = 0;
+            this.startWaveButton.parentContainer.y = 0;
+        }
+        if (this.waveControlContainer) {
+            this.waveControlContainer.x = 0;
+            this.waveControlContainer.y = 0;
+        }
+        // Add both to group, but only one is visible at a time
+        this.waveControlGroup.add(this.startWaveButton.parentContainer);
+        this.waveControlGroup.add(this.waveControlContainer);
+        // Center group width is max of startWave or waveControlContainer
+        this.waveControlGroup.width = Math.max(
+            this.startWaveButton.parentContainer.width || 220,
+            this.waveControlContainer.width || 120
+        );
+        this.waveControlGroup.height = this._towerButtonHeight || 48;
     }
 
     createTowerButton(x, y, text, type, cost, width, height) {
@@ -327,33 +368,33 @@ class UIManager {
     }
 
     createStartWaveButton() {
-        // Create start wave button container
-        const startWaveContainer = this.scene.add.container(GameConfig.UI.startWaveButtonX, GameConfig.UI.startWaveButtonY);
+        // Create start wave button container at (0,0) for proper group positioning
+        const startWaveContainer = this.scene.add.container(0, 0);
 
-        // Add button shadow
+        // Add button shadow (top-left origin)
         const startWaveShadow = this.scene.add.rectangle(2, 2, GameConfig.UI.startWaveButtonWidth - 20, 
             GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
-            .setOrigin(0.5);
+            .setOrigin(0, 0);
 
-        // Create start wave button with adjusted position
+        // Create start wave button with adjusted position (top-left origin)
         this.startWaveButton = this.scene.add.rectangle(0, 0, GameConfig.UI.startWaveButtonWidth, 
             GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_GREEN)
-            .setOrigin(0.5)
+            .setOrigin(0, 0)
             .setInteractive();
 
-        // Add glow effect
+        // Add glow effect (top-left origin)
         const startWaveGlow = this.scene.add.rectangle(0, 0, GameConfig.UI.startWaveButtonWidth - 16, 
             GameConfig.UI.startWaveButtonHeight + 4, GameConfig.COLORS.BUTTON_GREEN, 0.2)
-            .setOrigin(0.5)
+            .setOrigin(0, 0)
             .setVisible(false);
 
-        // Add text with improved styling
-        const startWaveText = this.scene.add.text(0, 0, 'Start Wave', {
+        // Add text centered within the button
+        const startWaveText = this.scene.add.text(GameConfig.UI.startWaveButtonWidth / 2, GameConfig.UI.startWaveButtonHeight / 2, 'Start Wave', {
             fontSize: GameConfig.UI.textFontSize,
             fill: '#fff',
             fontFamily: 'Arial',
             fontStyle: 'bold'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5, 0.5);
 
         // Add all elements to container
         startWaveContainer.add([startWaveShadow, startWaveGlow, this.startWaveButton, startWaveText]);
@@ -415,31 +456,43 @@ class UIManager {
     }
 
     createPlayPauseAndSpeedButtons() {
-        // Container for both buttons
-        this.waveControlContainer = this.scene.add.container(GameConfig.UI.startWaveButtonX, GameConfig.UI.startWaveButtonY);
+        // Container for both buttons at (0,0) for proper group positioning
+        this.waveControlContainer = this.scene.add.container(0, 0);
         this.waveControlContainer.setVisible(false);
 
+        // Match Start Wave button size
+        const groupWidth = GameConfig.UI.startWaveButtonWidth;
+        const groupHeight = GameConfig.UI.startWaveButtonHeight;
+
+        // Calculate button positions to center them in the group
+        const btnWidth = 60;
+        const btnHeight = groupHeight;
+        const spacing = 8;
+        const totalBtnWidth = btnWidth * 2 + spacing;
+        const startX = (groupWidth - totalBtnWidth) / 2;
+        const y = 0;
+
         // Play/Pause button
-        this.playPauseButton = this.scene.add.rectangle(-40, 0, 60, GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_BLUE)
-            .setOrigin(0.5)
+        this.playPauseButton = this.scene.add.rectangle(startX, y, btnWidth, btnHeight, GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0, 0)
             .setInteractive();
-        this.playPauseText = this.scene.add.text(-40, 0, '⏸', {
+        this.playPauseText = this.scene.add.text(startX + btnWidth / 2, groupHeight / 2, '⏸', {
             fontSize: GameConfig.UI.textFontSize,
             fill: '#fff',
             fontFamily: 'Arial',
             fontStyle: 'bold'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5, 0.5);
 
         // 2x Speed button
-        this.speedButton = this.scene.add.rectangle(40, 0, 60, GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_BLUE)
-            .setOrigin(0.5)
+        this.speedButton = this.scene.add.rectangle(startX + btnWidth + spacing, y, btnWidth, btnHeight, GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0, 0)
             .setInteractive();
-        this.speedText = this.scene.add.text(40, 0, '2x', {
+        this.speedText = this.scene.add.text(startX + btnWidth + spacing + btnWidth / 2, groupHeight / 2, '2x', {
             fontSize: GameConfig.UI.textFontSize,
             fill: '#fff',
             fontFamily: 'Arial',
             fontStyle: 'bold'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5, 0.5);
 
         this.waveControlContainer.add([this.playPauseButton, this.playPauseText, this.speedButton, this.speedText]);
 
@@ -589,7 +642,6 @@ class UIManager {
                 this.updateButtonState(button);
             }
         });
-        
         // Update upgrade button state and text
         if (this.upgradeButton) {
             const button = this.upgradeButton.list.find(child => child.type === 'Rectangle' && child.input && child.input.enabled);
@@ -598,18 +650,6 @@ class UIManager {
             }
             this.updateUpgradeButtonText();
         }
-    }
-
-    createUpgradeButton() {
-        // Place upgrade button after the last tower button, using the same shrunken size/spacing
-        const buttonWidth = this._towerButtonWidth || 110;
-        const buttonHeight = this._towerButtonHeight || 48;
-        const buttonSpacing = this._towerButtonSpacing || 16;
-        const startX = this._towerButtonStartX || 24;
-        const buttonY = GameConfig.UI.buttonY;
-        // Place after last tower button
-        const upgradeX = startX + (buttonWidth + buttonSpacing) * 4;
-        this.upgradeButton = this.createUpgradeButtonElement(upgradeX, buttonY, 'Upgrade ($30)', 30, buttonWidth, buttonHeight);
     }
 
     createUpgradeButtonElement(x, y, text, cost, width, height) {
