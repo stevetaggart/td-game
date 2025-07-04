@@ -178,7 +178,36 @@ class TowerDefenseGame extends Phaser.Scene {
         invalidGraphics.destroy();
     }
 
+    createGameAreaBorders() {
+        // Create black border lines on the left and right sides of the game area
+        const graphics = this.add.graphics();
+        
+        // Set line style for the borders
+        graphics.lineStyle(3, 0x000000, 1); // Black color, 3px width, full opacity
+        
+        // Calculate border positions based on responsive configuration
+        const leftBorderX = 0;
+        const rightBorderX = this.responsiveConfig.GAME_WIDTH;
+        const topY = this.responsiveConfig.GAME_AREA_TOP;
+        const bottomY = this.responsiveConfig.GAME_AREA_BOTTOM;
+        
+        // Draw left border line
+        graphics.beginPath();
+        graphics.moveTo(leftBorderX, topY);
+        graphics.lineTo(leftBorderX, bottomY);
+        graphics.strokePath();
+        
+        // Draw right border line
+        graphics.beginPath();
+        graphics.moveTo(rightBorderX, topY);
+        graphics.lineTo(rightBorderX, bottomY);
+        graphics.strokePath();
+    }
+
     create() {
+        // Get responsive configuration
+        this.responsiveConfig = window.responsiveConfig.getGameConfig();
+        
         // Initialize game systems
         this.pathManager = new PathManager();
         this.gameStateManager = new GameStateManager(this);
@@ -186,11 +215,16 @@ class TowerDefenseGame extends Phaser.Scene {
         this.towerPlacementManager = new TowerPlacementManager(this, this.pathManager);
         this.effectsManager = new EffectsManager(this);
         
-        // Get path from path manager
+        // Get scaled path from path manager
         this.path = this.pathManager.getPath();
 
         // Add the enemy path SVG image instead of drawing with graphics
-        this.add.image(GameConfig.GAME_WIDTH / 2, GameConfig.GAME_HEIGHT / 2, 'enemyPath').setOrigin(0.5);
+        this.add.image(this.responsiveConfig.GAME_WIDTH / 2, this.responsiveConfig.GAME_HEIGHT / 2, 'enemyPath')
+            .setOrigin(0.5)
+            .setScale(this.responsiveConfig.SCALE);
+
+        // Add border lines to indicate game area boundaries
+        this.createGameAreaBorders();
 
         // Create groups
         this.towers = this.add.group();
@@ -209,6 +243,11 @@ class TowerDefenseGame extends Phaser.Scene {
         // Input handling
         this.input.on('pointerdown', this.handleClick, this);
         this.input.on('pointermove', this.handleMouseMove, this);
+        
+        // Add touch-specific handling for mobile
+        if (this.responsiveConfig.IS_MOBILE) {
+            this.input.on('pointerup', this.handleTouchEnd, this);
+        }
 
         // Set up physics overlap for bullet-enemy collisions
         this.physics.add.overlap(this.bullets, this.enemies, this.handleBulletEnemyCollision, null, this);
@@ -226,6 +265,20 @@ class TowerDefenseGame extends Phaser.Scene {
 
     handleClick(pointer) {
         this.towerPlacementManager.handleClick(pointer);
+    }
+
+    handleTouchEnd(pointer) {
+        // Additional touch handling for mobile devices
+        // This can be used for touch-specific interactions
+        if (this.responsiveConfig.IS_MOBILE) {
+            // Hide tooltips on touch end for better mobile experience
+            if (this.uiManager && this.uiManager.hideTooltip) {
+                this.uiManager.hideTooltip();
+            }
+            if (this.uiManager && this.uiManager.hideEnemyTooltip) {
+                this.uiManager.hideEnemyTooltip();
+            }
+        }
     }
 
     handleBulletEnemyCollision(bullet, enemy) {
@@ -404,6 +457,21 @@ class TowerDefenseGame extends Phaser.Scene {
         this.uiManager.updateUI();
     }
 
+    handleResize(newConfig) {
+        // Update responsive configuration
+        this.responsiveConfig = newConfig;
+        
+        // Update UI manager if it exists
+        if (this.uiManager) {
+            this.uiManager.handleResize(newConfig);
+        }
+        
+        // Update path manager with new scaled path
+        if (this.pathManager) {
+            this.pathManager.path = window.responsiveConfig.getScaledPath();
+        }
+    }
+
     // Getters for backward compatibility
     get health() { return this.gameStateManager.health; }
     set health(value) { this.gameStateManager.health = value; }
@@ -439,17 +507,4 @@ class TowerDefenseGame extends Phaser.Scene {
     set enemiesDefeated(value) { this.gameStateManager.enemiesDefeated = value; }
 }
 
-// Game Configuration
-const config = {
-    type: Phaser.AUTO,
-    width: GameConfig.GAME_WIDTH,
-    height: GameConfig.GAME_HEIGHT,
-    parent: 'gameContainer',
-    backgroundColor: GameConfig.COLORS.BACKGROUND,
-    scene: TowerDefenseGame,
-    physics: {
-        default: 'arcade'
-    }
-};
-
-const game = new Phaser.Game(config);
+// Game initialization is now handled by game-init.js

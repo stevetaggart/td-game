@@ -145,7 +145,8 @@ class WaveManager {
 // Path Manager Class
 class PathManager {
     constructor() {
-        this.path = GameConfig.PATH;
+        // Use responsive path if available, otherwise fall back to original
+        this.path = window.responsiveConfig ? window.responsiveConfig.getScaledPath() : GameConfig.PATH;
     }
 
     getPath() {
