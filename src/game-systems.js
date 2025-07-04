@@ -266,8 +266,7 @@ class TowerPlacementManager {
         this.ghostTower = null;
         this.placementIndicator = null;
         
-        // Gesture control properties
-        this.isMobile = scene.responsiveConfig && scene.responsiveConfig.IS_MOBILE;
+        // Gesture control properties - will be updated dynamically
         this.gestureState = {
             isLongPressing: false,
             longPressTimer: null,
@@ -285,10 +284,51 @@ class TowerPlacementManager {
             mobileHint: null
         };
         
+        // Update mobile detection and show instructions if needed
+        this.updateMobileDetection();
+        
+        // Listen for resize events to update mobile detection
+        window.addEventListener('gameResize', (event) => {
+            this.updateMobileDetection();
+        });
+    }
+    
+    // Method to update mobile detection dynamically
+    updateMobileDetection() {
+        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
+        this.isMobile = responsiveConfig.IS_MOBILE;
+        
+        // Debug logging
+        console.log('TowerPlacementManager mobile detection:', {
+            isMobile: this.isMobile,
+            responsiveConfig: responsiveConfig.IS_MOBILE
+        });
+        
         // Show gesture instructions on mobile (only on first load)
         if (this.isMobile && !localStorage.getItem('gestureTutorialShown')) {
             this.showGestureInstructions();
             localStorage.setItem('gestureTutorialShown', 'true');
+        }
+        
+        // Show mobile indicator for debugging
+        this.showMobileIndicator();
+    }
+    
+    showMobileIndicator() {
+        // Remove existing indicator
+        if (this.mobileIndicator) {
+            this.mobileIndicator.destroy();
+        }
+        
+        if (this.isMobile) {
+            // Create a small indicator in the top-left corner
+            this.mobileIndicator = this.scene.add.text(10, 10, '📱 MOBILE MODE', {
+                fontSize: '16px',
+                fill: '#00ff00',
+                backgroundColor: '#000000',
+                padding: { x: 5, y: 2 }
+            });
+            this.mobileIndicator.setOrigin(0, 0);
         }
     }
 

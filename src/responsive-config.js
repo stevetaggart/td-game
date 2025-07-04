@@ -37,10 +37,27 @@ class ResponsiveConfig {
         this.offsetX = (viewportWidth - this.gameWidth) / 2;
         this.offsetY = (effectiveHeight - this.gameHeight) / 2;
         
-        // Determine if we're on mobile
-        // Updated breakpoint to accommodate modern mobile devices (926px)
-        this.isMobile = viewportWidth <= 926;
-        this.isTablet = viewportWidth > 926 && viewportWidth <= 1366;
+        // Determine if we're on mobile - use actual device detection instead of just screen width
+        const isMobileDevice = this.isMobileDevice();
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isSmallScreen = viewportWidth <= 926;
+        
+        // More reliable mobile detection
+        this.isMobile = isMobileDevice || (isTouchDevice && isSmallScreen);
+        this.isTablet = !this.isMobile && viewportWidth > 926 && viewportWidth <= 1366;
+        
+        // Debug logging
+        console.log('Responsive Config:', {
+            viewportWidth,
+            isMobileDevice,
+            isTouchDevice,
+            isSmallScreen,
+            isMobile: this.isMobile,
+            isTablet: this.isTablet
+        });
+        
+        // Show debug info on screen for mobile users
+        this.showDebugInfo();
         
         // Update UI dimensions based on screen size
         this.updateUIDimensions();
@@ -240,8 +257,19 @@ class ResponsiveConfig {
 
     // Detect if we're on an actual mobile device (not just screen size)
     isMobileDevice() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
                (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+        
+        // Debug logging
+        console.log('Mobile Detection:', {
+            userAgent: navigator.userAgent,
+            maxTouchPoints: navigator.maxTouchPoints,
+            isMobileDevice: isMobile,
+            viewportWidth: window.innerWidth,
+            isMobile: this.isMobile
+        });
+        
+        return isMobile;
     }
 
     // Get touch-friendly button dimensions
@@ -258,6 +286,60 @@ class ResponsiveConfig {
             minHeight: 32,
             padding: 4
         };
+    }
+    
+    showDebugInfo() {
+        // Remove existing debug info
+        if (this.debugElement) {
+            this.debugElement.remove();
+        }
+        
+        // Create debug info element
+        this.debugElement = document.createElement('div');
+        this.debugElement.id = 'mobileDebugInfo';
+        this.debugElement.style.cssText = `
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 10000;
+            max-width: 300px;
+            word-wrap: break-word;
+        `;
+        
+        const viewportWidth = window.innerWidth;
+        const isMobileDevice = this.isMobileDevice();
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isSmallScreen = viewportWidth <= 926;
+        
+        this.debugElement.innerHTML = `
+            <strong>📱 Mobile Debug Info:</strong><br>
+            Viewport: ${viewportWidth}px<br>
+            Mobile Device: ${isMobileDevice ? '✅' : '❌'}<br>
+            Touch Device: ${isTouchDevice ? '✅' : '❌'}<br>
+            Small Screen: ${isSmallScreen ? '✅' : '❌'}<br>
+            <strong>Final Result: ${this.isMobile ? 'MOBILE MODE ✅' : 'DESKTOP MODE ❌'}</strong><br>
+            <small>Tap to hide</small>
+        `;
+        
+        // Make it dismissible
+        this.debugElement.addEventListener('click', () => {
+            this.debugElement.remove();
+        });
+        
+        document.body.appendChild(this.debugElement);
+        
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            if (this.debugElement) {
+                this.debugElement.remove();
+            }
+        }, 10000);
     }
 }
 
