@@ -6,9 +6,18 @@ class ResponsiveConfig {
     }
 
     updateDimensions() {
-        // Get viewport dimensions
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+        // Get viewport dimensions - use visual viewport for more accurate mobile detection
+        const viewportWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+        const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        
+        // For mobile devices, ensure we don't exceed the available space
+        let effectiveHeight = viewportHeight;
+        if (this.isMobileDevice()) {
+            // Use a more conservative approach for mobile
+            const screenHeight = window.screen.height;
+            const maxHeight = Math.min(screenHeight * 0.85, viewportHeight); // Use 85% of screen height as max
+            effectiveHeight = Math.min(viewportHeight, maxHeight);
+        }
         
         // Define base dimensions (desktop)
         const baseWidth = 1200;
@@ -16,7 +25,7 @@ class ResponsiveConfig {
         
         // Calculate scale factors
         this.scaleX = viewportWidth / baseWidth;
-        this.scaleY = viewportHeight / baseHeight;
+        this.scaleY = effectiveHeight / baseHeight;
         this.scale = Math.min(this.scaleX, this.scaleY, 1); // Don't scale up beyond 1
         
         // Calculate actual game dimensions
@@ -25,7 +34,7 @@ class ResponsiveConfig {
         
         // Calculate offsets to center the game
         this.offsetX = (viewportWidth - this.gameWidth) / 2;
-        this.offsetY = (viewportHeight - this.gameHeight) / 2;
+        this.offsetY = (effectiveHeight - this.gameHeight) / 2;
         
         // Determine if we're on mobile
         // Updated breakpoint to accommodate modern mobile devices (926px)
@@ -72,18 +81,31 @@ class ResponsiveConfig {
     }
 
     setupResizeListener() {
+        // Handle window resize
         window.addEventListener('resize', () => {
             this.updateDimensions();
-            // Dispatch custom event for other components to listen to
-            window.dispatchEvent(new CustomEvent('gameResize', {
-                detail: {
-                    scale: this.scale,
-                    gameWidth: this.gameWidth,
-                    gameHeight: this.gameHeight,
-                    isMobile: this.isMobile
-                }
-            }));
+            this.dispatchResizeEvent();
         });
+        
+        // Handle visual viewport changes (important for mobile browsers)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                this.updateDimensions();
+                this.dispatchResizeEvent();
+            });
+        }
+    }
+    
+    dispatchResizeEvent() {
+        // Dispatch custom event for other components to listen to
+        window.dispatchEvent(new CustomEvent('gameResize', {
+            detail: {
+                scale: this.scale,
+                gameWidth: this.gameWidth,
+                gameHeight: this.gameHeight,
+                isMobile: this.isMobile
+            }
+        }));
     }
 
     // Utility methods for scaling
@@ -124,6 +146,12 @@ class ResponsiveConfig {
             x: this.scaleValue(point.x),
             y: this.scaleValue(point.y)
         }));
+    }
+
+    // Detect if we're on an actual mobile device (not just screen size)
+    isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+               (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
     }
 
     // Get touch-friendly button dimensions
