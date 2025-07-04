@@ -7,7 +7,7 @@ A browser-based tower defense game built with Phaser.js.
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd td_game
+   cd td-game
    ```
 
 2. **Start the server in a terminal:**
