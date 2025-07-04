@@ -3,6 +3,7 @@ class ResponsiveConfig {
     constructor() {
         this.updateDimensions();
         this.setupResizeListener();
+        this.setupFullScreenHandling();
     }
 
     updateDimensions() {
@@ -106,6 +107,95 @@ class ResponsiveConfig {
                 isMobile: this.isMobile
             }
         }));
+    }
+    
+    setupFullScreenHandling() {
+        // Request full-screen on mobile devices
+        if (this.isMobileDevice()) {
+            // Add a tap-to-fullscreen overlay for first-time users
+            this.createFullScreenPrompt();
+            
+            // Auto-request full-screen after a short delay
+            setTimeout(() => {
+                this.requestFullScreen();
+            }, 1000);
+        }
+    }
+    
+    createFullScreenPrompt() {
+        // Only show if user hasn't dismissed it before
+        if (localStorage.getItem('fullScreenPromptDismissed')) return;
+        
+        const prompt = document.createElement('div');
+        prompt.id = 'fullScreenPrompt';
+        prompt.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.9);
+                z-index: 10000;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                color: white;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                text-align: center;
+                padding: 20px;
+            ">
+                <h2 style="margin-bottom: 20px;">🎮 Full-Screen Mode</h2>
+                <p style="margin-bottom: 30px; line-height: 1.5;">
+                    For the best gaming experience, tap below to enter full-screen mode.<br>
+                    This will hide the browser UI and give you more screen space.
+                </p>
+                <button id="enterFullScreen" style="
+                    background: #007AFF;
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 15px;
+                ">Enter Full-Screen</button>
+                <button id="dismissPrompt" style="
+                    background: transparent;
+                    color: #999;
+                    border: 1px solid #999;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                ">Maybe Later</button>
+            </div>
+        `;
+        
+        document.body.appendChild(prompt);
+        
+        // Handle button clicks
+        document.getElementById('enterFullScreen').addEventListener('click', () => {
+            this.requestFullScreen();
+            prompt.remove();
+        });
+        
+        document.getElementById('dismissPrompt').addEventListener('click', () => {
+            localStorage.setItem('fullScreenPromptDismissed', 'true');
+            prompt.remove();
+        });
+    }
+    
+    requestFullScreen() {
+        const elem = document.documentElement;
+        
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { // Safari
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { // IE/Edge
+            elem.msRequestFullscreen();
+        }
     }
 
     // Utility methods for scaling

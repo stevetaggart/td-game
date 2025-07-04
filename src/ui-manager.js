@@ -184,6 +184,11 @@ class UIManager {
         
         // Create sound toggle button on the right side
         this.createSoundToggleButton();
+        
+        // Create full-screen toggle button (only on mobile)
+        if (responsiveConfig.IS_MOBILE) {
+            this.createFullScreenToggleButton();
+        }
     }
 
     createButtonPanel() {
@@ -1258,6 +1263,136 @@ class UIManager {
             this.scene.sound.setMute(false);
         } else {
             this.scene.sound.setMute(true);
+        }
+    }
+    
+    createFullScreenToggleButton() {
+        const rightMargin = 24; // Distance from right edge of game area
+        const buttonSize = 48; // Match tower button height for consistent spacing
+        const buttonX = GameConfig.GAME_WIDTH - rightMargin - buttonSize * 1.5; // Position to the left of sound button
+        const buttonY = GameConfig.UI_TOP_HEIGHT / 2; // Center vertically within the stats panel
+        
+        // Create button container
+        const buttonContainer = this.scene.add.container(buttonX, buttonY);
+        
+        // Create button background
+        const button = this.scene.add.rectangle(0, 0, buttonSize, buttonSize, 
+            GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0.5, 0.5)
+            .setInteractive();
+
+        // Add button shadow
+        const shadow = this.scene.add.rectangle(1, 1, buttonSize, buttonSize, 
+            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0.5, 0.5);
+
+        // Create full-screen icons
+        const iconSize = 24; // Slightly smaller than sound icon
+        const fullScreenIcon = this.scene.add.text(0, 0, '⛶', {
+            fontSize: iconSize + 'px',
+            fill: '#ffffff',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5, 0.5);
+
+        const exitFullScreenIcon = this.scene.add.text(0, 0, '⛶', {
+            fontSize: iconSize + 'px',
+            fill: '#ffffff',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5, 0.5);
+
+        // Add all elements to container
+        buttonContainer.add([shadow, button, fullScreenIcon, exitFullScreenIcon]);
+
+        // Store references
+        button.fullScreenIcon = fullScreenIcon;
+        button.exitFullScreenIcon = exitFullScreenIcon;
+        button.isFullScreen = false;
+
+        // Set initial state
+        this.updateFullScreenToggleState(button);
+
+        // Add hover effect
+        button.on('pointerover', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 100,
+                ease: 'Power2'
+            });
+        });
+
+        button.on('pointerout', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: 'Power2'
+            });
+        });
+
+        // Add click effect
+        button.on('pointerdown', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 50,
+                yoyo: true,
+                ease: 'Power2'
+            });
+        });
+
+        button.on('pointerup', () => {
+            this.toggleFullScreen(button);
+        });
+
+        this.fullScreenToggleButton = button;
+    }
+
+    updateFullScreenToggleState(button) {
+        if (button.isFullScreen) {
+            button.fullScreenIcon.setVisible(false);
+            button.exitFullScreenIcon.setVisible(true);
+            button.setFillStyle(GameConfig.COLORS.BUTTON_GREEN);
+        } else {
+            button.fullScreenIcon.setVisible(true);
+            button.exitFullScreenIcon.setVisible(false);
+            button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
+        }
+    }
+
+    toggleFullScreen(button) {
+        button.isFullScreen = !button.isFullScreen;
+        this.updateFullScreenToggleState(button);
+        
+        if (button.isFullScreen) {
+            this.requestFullScreen();
+        } else {
+            this.exitFullScreen();
+        }
+    }
+    
+    requestFullScreen() {
+        const elem = document.documentElement;
+        
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { // Safari
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { // IE/Edge
+            elem.msRequestFullscreen();
+        }
+    }
+    
+    exitFullScreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { // Safari
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+            document.msExitFullscreen();
         }
     }
 }
