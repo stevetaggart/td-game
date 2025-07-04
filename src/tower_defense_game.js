@@ -241,20 +241,34 @@ class TowerDefenseGame extends Phaser.Scene {
         }
 
         // Input handling
-        this.input.on('pointerdown', this.handleClick, this);
+        this.input.on('pointerdown', this.handlePointerDown, this);
         this.input.on('pointermove', this.handleMouseMove, this);
-        
-        // Add touch-specific handling for mobile
-        if (this.responsiveConfig.IS_MOBILE) {
-            this.input.on('pointerup', this.handleTouchEnd, this);
-        }
+        this.input.on('pointerup', this.handlePointerUp, this);
 
         // Set up physics overlap for bullet-enemy collisions
         this.physics.add.overlap(this.bullets, this.enemies, this.handleBulletEnemyCollision, null, this);
     }
 
+    handlePointerDown(pointer) {
+        // Handle gesture controls for mobile
+        if (this.responsiveConfig.IS_MOBILE) {
+            this.towerPlacementManager.handlePointerDown(pointer);
+        } else {
+            // Desktop behavior - immediate click handling
+            this.handleClick(pointer);
+        }
+    }
+
     handleMouseMove(pointer) {
-        this.towerPlacementManager.handleMouseMove(pointer);
+        // Handle gesture controls for mobile
+        if (this.responsiveConfig.IS_MOBILE) {
+            this.towerPlacementManager.handlePointerMove(pointer);
+        } else {
+            // Desktop behavior - ghost tower preview
+            this.towerPlacementManager.handleMouseMove(pointer);
+        }
+        
+        // Update tooltips
         if (this.uiManager && this.uiManager.updateTooltipPosition) {
             this.uiManager.updateTooltipPosition(pointer.worldX, pointer.worldY);
         }
@@ -263,14 +277,11 @@ class TowerDefenseGame extends Phaser.Scene {
         }
     }
 
-    handleClick(pointer) {
-        this.towerPlacementManager.handleClick(pointer);
-    }
-
-    handleTouchEnd(pointer) {
-        // Additional touch handling for mobile devices
-        // This can be used for touch-specific interactions
+    handlePointerUp(pointer) {
+        // Handle gesture controls for mobile
         if (this.responsiveConfig.IS_MOBILE) {
+            this.towerPlacementManager.handlePointerUp(pointer);
+            
             // Hide tooltips on touch end for better mobile experience
             if (this.uiManager && this.uiManager.hideTooltip) {
                 this.uiManager.hideTooltip();
@@ -279,6 +290,10 @@ class TowerDefenseGame extends Phaser.Scene {
                 this.uiManager.hideEnemyTooltip();
             }
         }
+    }
+
+    handleClick(pointer) {
+        this.towerPlacementManager.handleClick(pointer);
     }
 
     handleBulletEnemyCollision(bullet, enemy) {

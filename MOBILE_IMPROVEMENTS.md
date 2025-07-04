@@ -43,9 +43,9 @@ The game uses a `ResponsiveConfig` class that:
 - Scales game elements proportionally
 
 ### Mobile Detection
-- Screen width ≤ 768px: Mobile layout
-- Screen width 769-1024px: Tablet layout  
-- Screen width > 1024px: Desktop layout
+- Screen width ≤ 1024px: Mobile layout (updated for modern devices)
+- Screen width 1025-1366px: Tablet layout  
+- Screen width > 1366px: Desktop layout
 
 ## Usage
 

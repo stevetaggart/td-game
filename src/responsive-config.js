@@ -28,8 +28,9 @@ class ResponsiveConfig {
         this.offsetY = (viewportHeight - this.gameHeight) / 2;
         
         // Determine if we're on mobile
-        this.isMobile = viewportWidth <= 768;
-        this.isTablet = viewportWidth > 768 && viewportWidth <= 1024;
+        // Updated breakpoint to accommodate modern mobile devices (iPhone 14 Pro Max = 896px)
+        this.isMobile = viewportWidth <= 1024;
+        this.isTablet = viewportWidth > 1024 && viewportWidth <= 1366;
         
         // Update UI dimensions based on screen size
         this.updateUIDimensions();
