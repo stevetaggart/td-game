@@ -46,18 +46,18 @@ class ResponsiveConfig {
         this.isMobile = isMobileDevice || (isTouchDevice && isSmallScreen);
         this.isTablet = !this.isMobile && viewportWidth > 926 && viewportWidth <= 1366;
         
-        // Debug logging
-        console.log('Responsive Config:', {
-            viewportWidth,
-            isMobileDevice,
-            isTouchDevice,
-            isSmallScreen,
-            isMobile: this.isMobile,
-            isTablet: this.isTablet
-        });
+        // Debug logging disabled for production
+        // console.log('Responsive Config:', {
+        //     viewportWidth,
+        //     isMobileDevice,
+        //     isTouchDevice,
+        //     isSmallScreen,
+        //     isMobile: this.isMobile,
+        //     isTablet: this.isTablet
+        // });
         
-        // Show debug info on screen for mobile users
-        this.showDebugInfo();
+        // Debug info disabled for production
+        // this.showDebugInfo();
         
         // Update UI dimensions based on screen size
         this.updateUIDimensions();
@@ -260,14 +260,14 @@ class ResponsiveConfig {
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
                (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
         
-        // Debug logging
-        console.log('Mobile Detection:', {
-            userAgent: navigator.userAgent,
-            maxTouchPoints: navigator.maxTouchPoints,
-            isMobileDevice: isMobile,
-            viewportWidth: window.innerWidth,
-            isMobile: this.isMobile
-        });
+        // Debug logging disabled for production
+        // console.log('Mobile Detection:', {
+        //     userAgent: navigator.userAgent,
+        //     maxTouchPoints: navigator.maxTouchPoints,
+        //     isMobileDevice: isMobile,
+        //     viewportWidth: window.innerWidth,
+        //     isMobile: this.isMobile
+        // });
         
         return isMobile;
     }

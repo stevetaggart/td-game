@@ -298,11 +298,11 @@ class TowerPlacementManager {
         const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
         this.isMobile = responsiveConfig.IS_MOBILE;
         
-        // Debug logging
-        console.log('TowerPlacementManager mobile detection:', {
-            isMobile: this.isMobile,
-            responsiveConfig: responsiveConfig.IS_MOBILE
-        });
+        // Debug logging disabled for production
+        // console.log('TowerPlacementManager mobile detection:', {
+        //     isMobile: this.isMobile,
+        //     responsiveConfig: responsiveConfig.IS_MOBILE
+        // });
         
         // Show gesture instructions on mobile (only on first load)
         if (this.isMobile && !localStorage.getItem('gestureTutorialShown')) {
@@ -310,8 +310,8 @@ class TowerPlacementManager {
             localStorage.setItem('gestureTutorialShown', 'true');
         }
         
-        // Show mobile indicator for debugging
-        this.showMobileIndicator();
+        // Mobile indicator disabled for production
+        // this.showMobileIndicator();
     }
     
     showMobileIndicator() {
