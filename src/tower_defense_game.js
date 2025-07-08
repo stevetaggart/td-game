@@ -179,15 +179,15 @@ class TowerDefenseGame extends Phaser.Scene {
     }
 
     createGameAreaBorders() {
-        // Create black border lines on the left and right sides of the game area
+        // Create border lines to indicate game area boundaries
         const graphics = this.add.graphics();
         
         // Set line style for the borders
         graphics.lineStyle(3, 0x000000, 1); // Black color, 3px width, full opacity
         
         // Calculate border positions based on responsive configuration
-        const leftBorderX = 0;
-        const rightBorderX = this.responsiveConfig.GAME_WIDTH;
+        const leftBorderX = this.responsiveConfig.GAME_AREA_LEFT;
+        const rightBorderX = this.responsiveConfig.GAME_AREA_RIGHT;
         const topY = this.responsiveConfig.GAME_AREA_TOP;
         const bottomY = this.responsiveConfig.GAME_AREA_BOTTOM;
         
@@ -197,11 +197,13 @@ class TowerDefenseGame extends Phaser.Scene {
         graphics.lineTo(leftBorderX, bottomY);
         graphics.strokePath();
         
-        // Draw right border line
-        graphics.beginPath();
-        graphics.moveTo(rightBorderX, topY);
-        graphics.lineTo(rightBorderX, bottomY);
-        graphics.strokePath();
+        // Draw right border line (only if there's a right UI panel)
+        if (this.responsiveConfig.UI_RIGHT_WIDTH > 0) {
+            graphics.beginPath();
+            graphics.moveTo(rightBorderX, topY);
+            graphics.lineTo(rightBorderX, bottomY);
+            graphics.strokePath();
+        }
     }
 
     create() {
@@ -218,10 +220,32 @@ class TowerDefenseGame extends Phaser.Scene {
         // Get scaled path from path manager
         this.path = this.pathManager.getPath();
 
-        // Add the enemy path SVG image instead of drawing with graphics
-        this.add.image(this.responsiveConfig.GAME_WIDTH / 2, this.responsiveConfig.GAME_HEIGHT / 2, 'enemyPath')
-            .setOrigin(0.5)
-            .setScale(this.responsiveConfig.SCALE);
+        // Add the enemy path SVG image with appropriate positioning
+        if (this.responsiveConfig.IS_MOBILE) {
+            // For mobile: position within the game area with reduced scaling
+            const gameAreaCenterX = (this.responsiveConfig.GAME_AREA_LEFT + this.responsiveConfig.GAME_AREA_RIGHT) / 2;
+            const gameAreaCenterY = (this.responsiveConfig.GAME_AREA_TOP + this.responsiveConfig.GAME_AREA_BOTTOM) / 2;
+            
+            // Calculate appropriate scale to fit the path within the visible game area
+            const gameAreaWidth = this.responsiveConfig.GAME_AREA_RIGHT - this.responsiveConfig.GAME_AREA_LEFT;
+            const gameAreaHeight = this.responsiveConfig.GAME_AREA_BOTTOM - this.responsiveConfig.GAME_AREA_TOP;
+            
+            // Use a scale that fits the path within 90% of the available game area
+            const pathScale = Math.min(
+                (gameAreaWidth * 0.9) / 1200, // 1200 is the original path width
+                (gameAreaHeight * 0.9) / 600, // Approximate original path height
+                this.responsiveConfig.SCALE
+            );
+
+            this.add.image(gameAreaCenterX, gameAreaCenterY, 'enemyPath')
+                .setOrigin(0.5)
+                .setScale(pathScale);
+        } else {
+            // For desktop/tablet: use original full-width positioning
+            this.add.image(this.responsiveConfig.GAME_WIDTH / 2, this.responsiveConfig.GAME_HEIGHT / 2, 'enemyPath')
+                .setOrigin(0.5)
+                .setScale(this.responsiveConfig.SCALE);
+        }
 
         // Add border lines to indicate game area boundaries
         this.createGameAreaBorders();

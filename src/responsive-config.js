@@ -65,9 +65,10 @@ class ResponsiveConfig {
 
     updateUIDimensions() {
         if (this.isMobile) {
-            // Mobile UI adjustments
+            // Mobile UI adjustments - use right-side panel instead of bottom
             this.uiTopHeight = Math.floor(60 * this.scale);
-            this.uiBottomHeight = Math.floor(100 * this.scale);
+            this.uiBottomHeight = 0; // No bottom UI on mobile
+            this.uiRightWidth = Math.floor(120 * this.scale); // Right-side panel for buttons
             this.buttonHeight = Math.floor(40 * this.scale);
             this.buttonWidth = Math.floor(80 * this.scale);
             this.textFontSize = Math.floor(16 * this.scale) + 'px';
@@ -77,6 +78,7 @@ class ResponsiveConfig {
             // Tablet UI adjustments
             this.uiTopHeight = Math.floor(70 * this.scale);
             this.uiBottomHeight = Math.floor(90 * this.scale);
+            this.uiRightWidth = 0; // No right UI on tablet
             this.buttonHeight = Math.floor(45 * this.scale);
             this.buttonWidth = Math.floor(100 * this.scale);
             this.textFontSize = Math.floor(20 * this.scale) + 'px';
@@ -86,6 +88,7 @@ class ResponsiveConfig {
             // Desktop UI (original)
             this.uiTopHeight = Math.floor(80 * this.scale);
             this.uiBottomHeight = Math.floor(80 * this.scale);
+            this.uiRightWidth = 0; // No right UI on desktop
             this.buttonHeight = Math.floor(50 * this.scale);
             this.buttonWidth = Math.floor(110 * this.scale);
             this.textFontSize = Math.floor(24 * this.scale) + 'px';
@@ -96,6 +99,8 @@ class ResponsiveConfig {
         // Calculate game area boundaries
         this.gameAreaTop = this.uiTopHeight;
         this.gameAreaBottom = this.gameHeight - this.uiBottomHeight;
+        this.gameAreaLeft = 0;
+        this.gameAreaRight = this.gameWidth - (this.uiRightWidth || 0);
     }
 
     setupResizeListener() {
@@ -234,8 +239,11 @@ class ResponsiveConfig {
             GAME_HEIGHT: this.gameHeight,
             UI_TOP_HEIGHT: this.uiTopHeight,
             UI_BOTTOM_HEIGHT: this.uiBottomHeight,
+            UI_RIGHT_WIDTH: this.uiRightWidth || 0,
             GAME_AREA_TOP: this.gameAreaTop,
             GAME_AREA_BOTTOM: this.gameAreaBottom,
+            GAME_AREA_LEFT: this.gameAreaLeft || 0,
+            GAME_AREA_RIGHT: this.gameAreaRight || this.gameWidth,
             SCALE: this.scale,
             IS_MOBILE: this.isMobile,
             IS_TABLET: this.isTablet,
@@ -249,10 +257,33 @@ class ResponsiveConfig {
 
     // Scale path coordinates
     getScaledPath() {
-        return GameConfig.PATH.map(point => ({
-            x: this.scaleValue(point.x),
-            y: this.scaleValue(point.y)
-        }));
+        if (this.isMobile) {
+            // For mobile: scale and center path within available game area
+            const gameAreaWidth = (this.gameAreaRight || this.gameWidth) - (this.gameAreaLeft || 0);
+            const gameAreaHeight = this.gameAreaBottom - this.gameAreaTop;
+            
+            // Calculate scale to fit path within available game area
+            const pathScale = Math.min(
+                (gameAreaWidth * 0.9) / 1200, // 1200 is original path width
+                (gameAreaHeight * 0.9) / 600,  // Approximate original path height
+                this.scale
+            );
+            
+            // Calculate offsets to center the path in the game area
+            const offsetX = (this.gameAreaLeft || 0) + (gameAreaWidth - 1200 * pathScale) / 2;
+            const offsetY = this.gameAreaTop + (gameAreaHeight - 600 * pathScale) / 2;
+            
+            return GameConfig.PATH.map(point => ({
+                x: offsetX + point.x * pathScale,
+                y: offsetY + point.y * pathScale
+            }));
+        } else {
+            // For desktop/tablet: use original edge-to-edge scaling
+            return GameConfig.PATH.map(point => ({
+                x: this.scaleValue(point.x),
+                y: this.scaleValue(point.y)
+            }));
+        }
     }
 
     // Detect if we're on an actual mobile device (not just screen size)

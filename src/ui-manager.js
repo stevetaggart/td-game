@@ -195,10 +195,19 @@ class UIManager {
         // Get responsive configuration
         const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
         
-        // Create bottom button panel background
-        const buttonPanel = this.scene.add.rectangle(0, responsiveConfig.GAME_AREA_BOTTOM, responsiveConfig.GAME_WIDTH, 
-            responsiveConfig.UI_BOTTOM_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
-            .setOrigin(0, 0);
+        // Create button panel background based on device type
+        let buttonPanel;
+        if (responsiveConfig.IS_MOBILE) {
+            // Create right-side button panel for mobile
+            buttonPanel = this.scene.add.rectangle(responsiveConfig.GAME_AREA_RIGHT, 0, responsiveConfig.UI_RIGHT_WIDTH, 
+                responsiveConfig.GAME_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
+                .setOrigin(0, 0);
+        } else {
+            // Create bottom button panel for desktop/tablet
+            buttonPanel = this.scene.add.rectangle(0, responsiveConfig.GAME_AREA_BOTTOM, responsiveConfig.GAME_WIDTH, 
+                responsiveConfig.UI_BOTTOM_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
+                .setOrigin(0, 0);
+        }
 
         // --- Tower Button Group ---
         this.createTowerButtonGroup();
@@ -221,21 +230,52 @@ class UIManager {
     arrangeMobileLayout() {
         const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
         const margin = 8;
-        const spacing = 8;
+        const spacing = 12;
         
-        // Stack tower buttons horizontally at the top of the bottom panel
-        const towerY = responsiveConfig.GAME_AREA_BOTTOM + margin;
-        this.towerButtonGroup.x = margin;
-        this.towerButtonGroup.y = towerY;
+        // Position all button groups vertically on the right side
+        const rightPanelX = responsiveConfig.GAME_AREA_RIGHT + margin;
+        let currentY = responsiveConfig.UI_TOP_HEIGHT + margin;
         
-        // Place wave control buttons below tower buttons
-        const waveY = towerY + this._towerButtonHeight + spacing;
-        this.waveControlGroup.x = margin;
-        this.waveControlGroup.y = waveY;
+        // Position tower buttons at the top of the right panel
+        this.towerButtonGroup.x = rightPanelX;
+        this.towerButtonGroup.y = currentY;
         
-        // Place upgrade buttons to the right of wave controls
-        this.upgradeButtonGroup.x = this.waveControlGroup.x + this.waveControlGroup.width + spacing;
-        this.upgradeButtonGroup.y = waveY;
+        // Stack tower buttons vertically since we have limited horizontal space
+        this.rearrangeTowerButtonsVertically();
+        
+        // Position wave control buttons below tower buttons
+        currentY += this.getTowerButtonGroupHeight() + spacing;
+        this.waveControlGroup.x = rightPanelX;
+        this.waveControlGroup.y = currentY;
+        
+        // Position upgrade buttons below wave controls
+        currentY += this._towerButtonHeight + spacing;
+        this.upgradeButtonGroup.x = rightPanelX;
+        this.upgradeButtonGroup.y = currentY;
+    }
+
+    rearrangeTowerButtonsVertically() {
+        // Rearrange tower buttons in a vertical stack for mobile
+        const spacing = this._towerButtonSpacing;
+        this.towerButtons.forEach((button, i) => {
+            button.parentContainer.x = 0;
+            button.parentContainer.y = i * (this._towerButtonHeight + spacing);
+        });
+        
+        // Update container dimensions
+        this.towerButtonGroup.width = this._towerButtonWidth;
+        this.towerButtonGroup.height = this.towerButtons.length * this._towerButtonHeight + 
+                                       (this.towerButtons.length - 1) * spacing;
+    }
+
+    getTowerButtonGroupHeight() {
+        // Calculate total height of the tower button group
+        if (this.scene.responsiveConfig.IS_MOBILE) {
+            return this.towerButtons.length * this._towerButtonHeight + 
+                   (this.towerButtons.length - 1) * this._towerButtonSpacing;
+        } else {
+            return this._towerButtonHeight;
+        }
     }
 
     arrangeDesktopLayout() {

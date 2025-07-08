@@ -498,9 +498,15 @@ class TowerPlacementManager {
 
         const x = pointer.x;
         const y = pointer.y;
+        
+        // Get responsive configuration
+        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
 
         // Don't allow gestures in UI areas
-        if (y < GameConfig.GAME_AREA_TOP || y >= GameConfig.GAME_AREA_BOTTOM) {
+        if (y < responsiveConfig.GAME_AREA_TOP || 
+            y >= responsiveConfig.GAME_AREA_BOTTOM ||
+            x < responsiveConfig.GAME_AREA_LEFT ||
+            x >= responsiveConfig.GAME_AREA_RIGHT) {
             return;
         }
 
