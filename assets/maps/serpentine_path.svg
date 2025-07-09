@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <defs>
+    <style>
+      .path {
+        fill: none;
+        stroke: #34495e;
+        stroke-width: 80;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .path-outline {
+        fill: none;
+        stroke: #2c3e50;
+        stroke-width: 84;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="600" fill="#16a085" opacity="0.1"/>
+  
+  <!-- Path outline (darker) -->
+  <path class="path-outline" d="M0,300 L150,300 L150,150 L300,150 L300,450 L450,450 L450,200 L600,200 L600,500 L750,500 L750,250 L900,250 L900,400 L1200,400"/>
+  
+  <!-- Main path -->
+  <path class="path" d="M0,300 L150,300 L150,150 L300,150 L300,450 L450,450 L450,200 L600,200 L600,500 L750,500 L750,250 L900,250 L900,400 L1200,400"/>
+  
+  <!-- Start point -->
+  <circle cx="0" cy="300" r="20" fill="#27ae60"/>
+  
+  <!-- End point -->
+  <circle cx="1200" cy="400" r="20" fill="#e74c3c"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="300" cy="300" r="8" fill="#3498db" opacity="0.6"/>
+  <circle cx="600" cy="350" r="8" fill="#3498db" opacity="0.6"/>
+  <circle cx="900" cy="325" r="8" fill="#3498db" opacity="0.6"/>
+</svg>

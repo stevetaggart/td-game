@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <defs>
+    <style>
+      .path {
+        fill: none;
+        stroke: #34495e;
+        stroke-width: 80;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .path-outline {
+        fill: none;
+        stroke: #2c3e50;
+        stroke-width: 84;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="600" fill="#9b59b6" opacity="0.1"/>
+  
+  <!-- Path outline (darker) -->
+  <path class="path-outline" d="M0,200 L400,200 L400,400 L200,400 L200,600 L600,600 L600,300 L800,300 L800,500 L1000,500 L1000,100 L1200,100"/>
+  
+  <!-- Main path -->
+  <path class="path" d="M0,200 L400,200 L400,400 L200,400 L200,600 L600,600 L600,300 L800,300 L800,500 L1000,500 L1000,100 L1200,100"/>
+  
+  <!-- Start point -->
+  <circle cx="0" cy="200" r="20" fill="#27ae60"/>
+  
+  <!-- End point -->
+  <circle cx="1200" cy="100" r="20" fill="#e74c3c"/>
+  
+  <!-- Junction points -->
+  <circle cx="400" cy="300" r="15" fill="#9b59b6"/>
+  <circle cx="600" cy="400" r="15" fill="#9b59b6"/>
+  <circle cx="800" cy="400" r="15" fill="#9b59b6"/>
+  
+  <!-- Decorative crossing elements -->
+  <rect x="380" y="280" width="40" height="40" fill="#9b59b6" opacity="0.3"/>
+  <rect x="580" y="380" width="40" height="40" fill="#9b59b6" opacity="0.3"/>
+  <rect x="780" y="380" width="40" height="40" fill="#9b59b6" opacity="0.3"/>
+  
+  <!-- Direction indicators -->
+  <polygon points="400,180 420,200 400,220 380,200" fill="#f39c12" opacity="0.8"/>
+  <polygon points="180,400 200,420 220,400 200,380" fill="#f39c12" opacity="0.8"/>
+  <polygon points="800,280 820,300 800,320 780,300" fill="#f39c12" opacity="0.8"/>
+</svg>

@@ -145,8 +145,16 @@ class WaveManager {
 // Path Manager Class
 class PathManager {
     constructor() {
-        // Use responsive path if available, otherwise fall back to original
-        this.path = window.responsiveConfig ? window.responsiveConfig.getScaledPath() : GameConfig.PATH;
+        // Get the selected map ID, default to 'classic' if none selected
+        const selectedMapId = window.selectedMapId || 'classic';
+        
+        // Use the map's scaled path if available
+        if (window.MapUtils && window.responsiveConfig) {
+            this.path = window.MapUtils.getScaledPath(selectedMapId, window.responsiveConfig.getGameConfig());
+        } else {
+            // Fallback to original path
+            this.path = GameConfig.PATH;
+        }
     }
 
     getPath() {

@@ -56,8 +56,16 @@ class TowerDefenseGame extends Phaser.Scene {
         this.load.image('cannonTower', GameConfig.ASSETS.cannonTower);
         this.load.image('multishotTower', GameConfig.ASSETS.multishotTower);
         
-        // Load the enemy path SVG
-        this.load.image('enemyPath', GameConfig.ASSETS.enemyPath);
+        // Load the enemy path SVG based on selected map
+        const selectedMapId = window.selectedMapId || 'classic';
+        const selectedMap = window.MapUtils ? window.MapUtils.getMapById(selectedMapId) : null;
+        
+        if (selectedMap) {
+            this.load.image('enemyPath', selectedMap.backgroundAsset);
+        } else {
+            // Fallback to default path
+            this.load.image('enemyPath', GameConfig.ASSETS.enemyPath);
+        }
         
         // Load enemy sprites
         this.load.image('enemy', GameConfig.ASSETS.enemy);

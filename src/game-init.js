@@ -32,7 +32,7 @@ class GameInitializer {
                     debug: false
                 }
             },
-            scene: TowerDefenseGame,
+            scene: [MapSelectionScene, TowerDefenseGame],
             scale: {
                 mode: Phaser.Scale.FIT,
                 autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -61,9 +61,12 @@ class GameInitializer {
                 // Update the scale configuration
                 this.game.scale.setGameSize(newConfig.GAME_WIDTH, newConfig.GAME_HEIGHT);
                 
-                // Notify the scene about the resize
+                // Notify the active scene about the resize
                 if (this.game.scene.getScene('TowerDefenseGame')) {
                     this.game.scene.getScene('TowerDefenseGame').handleResize(newConfig);
+                }
+                if (this.game.scene.getScene('MapSelectionScene')) {
+                    this.game.scene.getScene('MapSelectionScene').handleResize(newConfig);
                 }
             }
         });

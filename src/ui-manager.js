@@ -185,6 +185,9 @@ class UIManager {
         // Create sound toggle button on the right side
         this.createSoundToggleButton();
         
+        // Create map selection button
+        this.createMapSelectionButton();
+        
         // Create full-screen toggle button (only on mobile)
         if (responsiveConfig.IS_MOBILE) {
             this.createFullScreenToggleButton();
@@ -1434,6 +1437,109 @@ class UIManager {
         } else if (document.msExitFullscreen) { // IE/Edge
             document.msExitFullscreen();
         }
+    }
+
+    createMapSelectionButton() {
+        // Get responsive configuration
+        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
+        
+        // Button dimensions and position
+        const buttonWidth = responsiveConfig.IS_MOBILE ? 60 : 120;
+        const buttonHeight = responsiveConfig.IS_MOBILE ? 25 : 35;
+        
+        // Position relative to sound button
+        let buttonX, buttonY;
+        if (responsiveConfig.IS_MOBILE) {
+            // Position above the sound button on mobile
+            buttonX = responsiveConfig.GAME_WIDTH - buttonWidth - 10;
+            buttonY = 45;
+        } else {
+            // Position to the left of sound button on desktop
+            buttonX = responsiveConfig.GAME_WIDTH - buttonWidth - 80;
+            buttonY = 15;
+        }
+
+        // Create button container
+        this.mapSelectionButton = this.scene.add.container(buttonX, buttonY);
+
+        // Create button background
+        const buttonBg = this.scene.add.rectangle(0, 0, buttonWidth, buttonHeight, 
+            GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0, 0)
+            .setInteractive();
+
+        // Add button shadow
+        const shadow = this.scene.add.rectangle(2, 2, buttonWidth, buttonHeight, 
+            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0, 0);
+
+        // Button text
+        const buttonText = this.scene.add.text(buttonWidth / 2, buttonHeight / 2, 
+            responsiveConfig.IS_MOBILE ? 'Maps' : 'Select Map', {
+            fontSize: responsiveConfig.IS_MOBILE ? '12px' : '16px',
+            fill: '#ffffff',
+            fontFamily: 'Arial, sans-serif',
+            fontStyle: 'bold'
+        });
+        buttonText.setOrigin(0.5);
+
+        // Add elements to container
+        this.mapSelectionButton.add([shadow, buttonBg, buttonText]);
+
+        // Hover effects
+        buttonBg.on('pointerover', () => {
+            buttonBg.setFillStyle(GameConfig.COLORS.BUTTON_BLUE_HOVER);
+            this.scene.tweens.add({
+                targets: this.mapSelectionButton,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: 'Power2'
+            });
+        });
+
+        buttonBg.on('pointerout', () => {
+            buttonBg.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
+            this.scene.tweens.add({
+                targets: this.mapSelectionButton,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: 'Power2'
+            });
+        });
+
+        // Click handler
+        buttonBg.on('pointerdown', () => {
+            this.scene.tweens.add({
+                targets: this.mapSelectionButton,
+                scaleX: 0.95,
+                scaleY: 0.95,
+                duration: 50,
+                yoyo: true,
+                ease: 'Power2'
+            });
+        });
+
+        buttonBg.on('pointerup', () => {
+            this.returnToMapSelection();
+        });
+
+        // Store references for cleanup
+        this.mapSelectionButton.buttonBg = buttonBg;
+        this.mapSelectionButton.buttonText = buttonText;
+        this.mapSelectionButton.shadow = shadow;
+    }
+
+    returnToMapSelection() {
+        // Trigger haptic feedback on mobile
+        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
+        if (responsiveConfig.IS_MOBILE && navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+
+        // Start the map selection scene
+        this.scene.scene.start('MapSelectionScene');
     }
 }
 

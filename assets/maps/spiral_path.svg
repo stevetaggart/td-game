@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <defs>
+    <style>
+      .path {
+        fill: none;
+        stroke: #34495e;
+        stroke-width: 80;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .path-outline {
+        fill: none;
+        stroke: #2c3e50;
+        stroke-width: 84;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="600" fill="#8e44ad" opacity="0.1"/>
+  
+  <!-- Path outline (darker) -->
+  <path class="path-outline" d="M0,600 L1000,600 L1000,150 L200,150 L200,450 L800,450 L800,300 L400,300 L400,350 L600,350 L600,375"/>
+  
+  <!-- Main path -->
+  <path class="path" d="M0,600 L1000,600 L1000,150 L200,150 L200,450 L800,450 L800,300 L400,300 L400,350 L600,350 L600,375"/>
+  
+  <!-- Start point -->
+  <circle cx="0" cy="600" r="20" fill="#27ae60"/>
+  
+  <!-- End point (center) -->
+  <circle cx="600" cy="375" r="25" fill="#e74c3c"/>
+  
+  <!-- Decorative elements - spiral markers -->
+  <circle cx="500" cy="600" r="8" fill="#e74c3c" opacity="0.6"/>
+  <circle cx="1000" cy="400" r="8" fill="#e74c3c" opacity="0.6"/>
+  <circle cx="600" cy="150" r="8" fill="#e74c3c" opacity="0.6"/>
+  <circle cx="200" cy="300" r="8" fill="#e74c3c" opacity="0.6"/>
+  <circle cx="600" cy="450" r="8" fill="#e74c3c" opacity="0.6"/>
+  
+  <!-- Center spiral indicator -->
+  <circle cx="600" cy="375" r="40" fill="none" stroke="#9b59b6" stroke-width="3" opacity="0.5"/>
+  <circle cx="600" cy="375" r="60" fill="none" stroke="#9b59b6" stroke-width="2" opacity="0.3"/>
+</svg>
