@@ -256,7 +256,9 @@ class ResponsiveConfig {
     }
 
     // Scale path coordinates
-    getScaledPath() {
+    getScaledPath(customPath = null) {
+        const pathToScale = customPath || GameConfig.PATH;
+        
         if (this.isMobile) {
             // For mobile: scale and center path within available game area
             const gameAreaWidth = (this.gameAreaRight || this.gameWidth) - (this.gameAreaLeft || 0);
@@ -273,13 +275,13 @@ class ResponsiveConfig {
             const offsetX = (this.gameAreaLeft || 0) + (gameAreaWidth - 1200 * pathScale) / 2;
             const offsetY = this.gameAreaTop + (gameAreaHeight - 600 * pathScale) / 2;
             
-            return GameConfig.PATH.map(point => ({
+            return pathToScale.map(point => ({
                 x: offsetX + point.x * pathScale,
                 y: offsetY + point.y * pathScale
             }));
         } else {
             // For desktop/tablet: use original edge-to-edge scaling
-            return GameConfig.PATH.map(point => ({
+            return pathToScale.map(point => ({
                 x: this.scaleValue(point.x),
                 y: this.scaleValue(point.y)
             }));

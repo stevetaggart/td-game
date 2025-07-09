@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+  <!-- Ancient background -->
+  <rect width="200" height="150" fill="#D2B48C"/>
+  
+  <!-- Temple structures -->
+  <rect x="30" y="80" width="25" height="40" fill="#A0522D"/>
+  <rect x="32" y="75" width="21" height="8" fill="#8B4513"/>
+  <rect x="145" y="70" width="20" height="35" fill="#A0522D"/>
+  <rect x="147" y="65" width="16" height="6" fill="#8B4513"/>
+  
+  <!-- Columns -->
+  <rect x="80" y="90" width="4" height="30" fill="#696969"/>
+  <rect x="90" y="85" width="4" height="35" fill="#696969"/>
+  <rect x="100" y="95" width="4" height="25" fill="#696969"/>
+  
+  <!-- Rubble -->
+  <ellipse cx="120" cy="130" rx="8" ry="5" fill="#8B7355"/>
+  <ellipse cx="60" cy="135" rx="6" ry="4" fill="#8B7355"/>
+  <ellipse cx="180" cy="125" rx="7" ry="4" fill="#8B7355"/>
+  
+  <!-- Path preview -->
+  <path d="M 0 87 L 50 87 L 50 125 L 100 125 L 100 50 L 150 50 L 150 112 L 200 112" 
+        stroke="#DAA520" stroke-width="4" fill="none" opacity="0.8"/>
+  
+  <!-- Ancient symbols -->
+  <text x="42" y="105" text-anchor="middle" font-family="serif" font-size="8" fill="#654321">☥</text>
+  <text x="155" y="95" text-anchor="middle" font-family="serif" font-size="8" fill="#654321">⚱</text>
+  
+  <!-- Map name -->
+  <text x="100" y="20" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="#8B4513">Ancient Ruins</text>
+</svg>

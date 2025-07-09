@@ -149,7 +149,15 @@ class PathManager {
         this.path = window.responsiveConfig ? window.responsiveConfig.getScaledPath() : GameConfig.PATH;
     }
 
-    getPath() {
+    getPath(customPath = null) {
+        if (customPath) {
+            // Scale the custom path using responsive config
+            if (window.responsiveConfig) {
+                return window.responsiveConfig.getScaledPath(customPath);
+            } else {
+                return customPath;
+            }
+        }
         return this.path;
     }
 

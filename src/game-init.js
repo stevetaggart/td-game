@@ -32,7 +32,7 @@ class GameInitializer {
                     debug: false
                 }
             },
-            scene: TowerDefenseGame,
+            scene: GameConfig.FEATURES.MAP_SELECTION ? [MapSelectionScene, TowerDefenseGame] : TowerDefenseGame,
             scale: {
                 mode: Phaser.Scale.FIT,
                 autoCenter: Phaser.Scale.CENTER_BOTH,

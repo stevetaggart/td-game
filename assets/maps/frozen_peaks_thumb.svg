@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+  <!-- Icy background -->
+  <rect width="200" height="150" fill="#E0F6FF"/>
+  
+  <!-- Mountain peaks -->
+  <polygon points="20,150 50,50 80,150" fill="#B0C4DE"/>
+  <polygon points="70,150 100,40 130,150" fill="#C0C0C0"/>
+  <polygon points="120,150 150,60 180,150" fill="#B0C4DE"/>
+  
+  <!-- Snow caps -->
+  <polygon points="45,65 50,50 55,65" fill="#FFFFFF"/>
+  <polygon points="95,55 100,40 105,55" fill="#FFFFFF"/>
+  <polygon points="145,75 150,60 155,75" fill="#FFFFFF"/>
+  
+  <!-- Icy path preview -->
+  <path d="M 0 125 Q 45 125 45 45 Q 105 45 105 100 Q 55 100 55 137 Q 150 137 150 75 Q 200 75 200 125" 
+        stroke="#4169E1" stroke-width="4" fill="none" opacity="0.8"/>
+  
+  <!-- Ice crystals -->
+  <polygon points="30,100 32,95 34,100 32,105" fill="#87CEEB"/>
+  <polygon points="160,90 162,85 164,90 162,95" fill="#87CEEB"/>
+  
+  <!-- Map name -->
+  <text x="100" y="20" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#2F4F4F">Frozen Peaks</text>
+</svg>

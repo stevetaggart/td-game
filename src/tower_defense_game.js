@@ -47,6 +47,62 @@ class TowerDefenseGame extends Phaser.Scene {
     }
     constructor() {
         super({ key: 'TowerDefenseGame' });
+        this.currentMapId = null;
+        this.currentMapData = null;
+    }
+
+    init(data) {
+        // Handle map selection data
+        this.currentMapId = data && data.mapId ? data.mapId : null;
+        this.currentMapData = this.getCurrentMapData();
+    }
+
+    getCurrentMapData() {
+        if (!GameConfig.FEATURES.MAP_SELECTION || !this.currentMapId) {
+            // Return legacy map data when feature is disabled or no map selected
+            return {
+                id: 'legacy',
+                name: 'Classic Map',
+                path: GameConfig.PATH,
+                background: 'enemyPath'
+            };
+        }
+        
+        const mapData = GameConfig.MAPS[this.currentMapId];
+        if (!mapData) {
+            console.warn(`Map ${this.currentMapId} not found, falling back to legacy map`);
+            return {
+                id: 'legacy',
+                name: 'Classic Map', 
+                path: GameConfig.PATH,
+                background: 'enemyPath'
+            };
+        }
+        
+        return {
+            ...mapData,
+            background: this.getMapBackgroundKey(mapData.id)
+        };
+    }
+
+    getMapBackgroundKey(mapId) {
+        const keyMap = {
+            'desert_winds': 'desertWindsBg',
+            'frozen_peaks': 'frozenPeaksBg',
+            'volcanic_maze': 'volcanicMazeBg',
+            'ancient_ruins': 'ancientRuinsBg'
+        };
+        return keyMap[mapId] || 'enemyPath';
+    }
+
+    getBackgroundAssetPath(mapId) {
+        const pathMap = {
+            'desert_winds': GameConfig.ASSETS.desertWindsBg,
+            'frozen_peaks': GameConfig.ASSETS.frozenPeaksBg,
+            'volcanic_maze': GameConfig.ASSETS.volcanicMazeBg,
+            'ancient_ruins': GameConfig.ASSETS.ancientRuinsBg
+        };
+        return pathMap[mapId] || GameConfig.ASSETS.enemyPath;
     }
 
     preload() {
@@ -56,8 +112,15 @@ class TowerDefenseGame extends Phaser.Scene {
         this.load.image('cannonTower', GameConfig.ASSETS.cannonTower);
         this.load.image('multishotTower', GameConfig.ASSETS.multishotTower);
         
-        // Load the enemy path SVG
-        this.load.image('enemyPath', GameConfig.ASSETS.enemyPath);
+        // Load the appropriate map background
+        if (GameConfig.FEATURES.MAP_SELECTION && this.currentMapData.background !== 'enemyPath') {
+            // Load custom map background
+            const backgroundAsset = this.getBackgroundAssetPath(this.currentMapData.id);
+            this.load.image(this.currentMapData.background, backgroundAsset);
+        } else {
+            // Load default enemy path SVG
+            this.load.image('enemyPath', GameConfig.ASSETS.enemyPath);
+        }
         
         // Load enemy sprites
         this.load.image('enemy', GameConfig.ASSETS.enemy);
@@ -217,8 +280,8 @@ class TowerDefenseGame extends Phaser.Scene {
         this.towerPlacementManager = new TowerPlacementManager(this, this.pathManager);
         this.effectsManager = new EffectsManager(this);
         
-        // Get scaled path from path manager
-        this.path = this.pathManager.getPath();
+        // Get scaled path from path manager using current map data
+        this.path = this.pathManager.getPath(this.currentMapData.path);
 
         // Add the enemy path SVG image with appropriate positioning
         if (this.responsiveConfig.IS_MOBILE) {
@@ -237,12 +300,12 @@ class TowerDefenseGame extends Phaser.Scene {
                 this.responsiveConfig.SCALE
             );
 
-            this.add.image(gameAreaCenterX, gameAreaCenterY, 'enemyPath')
+            this.add.image(gameAreaCenterX, gameAreaCenterY, this.currentMapData.background)
                 .setOrigin(0.5)
                 .setScale(pathScale);
         } else {
             // For desktop/tablet: use original full-width positioning
-            this.add.image(this.responsiveConfig.GAME_WIDTH / 2, this.responsiveConfig.GAME_HEIGHT / 2, 'enemyPath')
+            this.add.image(this.responsiveConfig.GAME_WIDTH / 2, this.responsiveConfig.GAME_HEIGHT / 2, this.currentMapData.background)
                 .setOrigin(0.5)
                 .setScale(this.responsiveConfig.SCALE);
         }
@@ -258,6 +321,11 @@ class TowerDefenseGame extends Phaser.Scene {
         // Initialize UI manager
         this.uiManager = new UIManager(this);
         this.uiManager.createUI();
+        
+        // Add map selection button if feature is enabled
+        if (GameConfig.FEATURES.MAP_SELECTION) {
+            this.createMapSelectionButton();
+        }
 
         // Set initial sound state based on user preference
         if (!this.uiManager.soundEnabled) {
@@ -381,6 +449,104 @@ class TowerDefenseGame extends Phaser.Scene {
         this.uiManager.hideGameOver();
         this.uiManager.updateUI();
         this.uiManager.updateAllButtonStates();
+    }
+
+    createMapSelectionButton() {
+        const buttonWidth = 140;
+        const buttonHeight = 40;
+        const buttonX = this.responsiveConfig.GAME_WIDTH - buttonWidth - 20;
+        const buttonY = this.responsiveConfig.IS_MOBILE ? 25 : 45;
+
+        // Button background
+        const mapButton = this.add.rectangle(buttonX, buttonY, buttonWidth, buttonHeight, 0x16537e);
+        mapButton.setStrokeStyle(2, 0x0984e3);
+
+        // Button text
+        const mapButtonText = this.add.text(buttonX, buttonY, 'Change Map', {
+            fontSize: this.responsiveConfig.IS_MOBILE ? '12px' : '14px',
+            fontFamily: 'Arial',
+            fill: '#ffffff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        // Interactive area
+        const mapButtonHitArea = this.add.rectangle(buttonX, buttonY, buttonWidth, buttonHeight, 0x000000, 0);
+        mapButtonHitArea.setInteractive({ useHandCursor: true });
+
+        // Hover effects
+        mapButtonHitArea.on('pointerover', () => {
+            mapButton.setFillStyle(0x0984e3);
+            mapButtonText.setScale(1.05);
+        });
+
+        mapButtonHitArea.on('pointerout', () => {
+            mapButton.setFillStyle(0x16537e);
+            mapButtonText.setScale(1);
+        });
+
+        // Click handler
+        mapButtonHitArea.on('pointerdown', () => {
+            this.goToMapSelection();
+        });
+
+        // Store references
+        this.mapSelectionButton = {
+            background: mapButton,
+            text: mapButtonText,
+            hitArea: mapButtonHitArea
+        };
+    }
+
+    goToMapSelection() {
+        // Reset game state before switching to map selection
+        this.resetGameForMapSwitch();
+        
+        // Start map selection scene
+        this.scene.start('MapSelectionScene');
+    }
+
+    resetGameForMapSwitch() {
+        // Stop all game activity
+        if (this.waveManager) {
+            this.waveManager.waveActive = false;
+            if (this.waveManager.spawnTimer) {
+                this.waveManager.spawnTimer.paused = true;
+            }
+        }
+        
+        // Clear all game objects
+        if (this.towers) {
+            this.towers.children.entries.forEach(tower => {
+                tower.destroy();
+            });
+        }
+        
+        if (this.enemies) {
+            this.enemies.children.entries.forEach(enemy => {
+                enemy.destroy();
+            });
+        }
+        
+        if (this.bullets) {
+            this.bullets.children.entries.forEach(bullet => {
+                bullet.destroy();
+            });
+        }
+
+        // Clear ghost tower
+        if (this.towerPlacementManager) {
+            this.towerPlacementManager.hideGhostTower();
+            this.towerPlacementManager.clearSelection();
+        }
+
+        // Reset managers
+        if (this.gameStateManager) {
+            this.gameStateManager.reset();
+        }
+        
+        if (this.waveManager) {
+            this.waveManager.reset();
+        }
     }
     update(time, delta) {
         if (this.gameStateManager.gameOver) return;

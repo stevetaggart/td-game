@@ -2,6 +2,11 @@
 // (add these inside COLORS below)
 // Game Configuration and Constants
 const GameConfig = {
+    // Feature Flags
+    FEATURES: {
+        MAP_SELECTION: true, // Set to false to use original single map behavior
+    },
+    
     // Game dimensions and UI
     GAME_WIDTH: 1200,
     GAME_HEIGHT: 800,
@@ -228,7 +233,107 @@ const GameConfig = {
         gameOverStatsFontSize: '32px'
     },
     
-    // Path coordinates
+    // Maps configuration
+    MAPS: {
+        desert_winds: {
+            id: 'desert_winds',
+            name: 'Desert Winds',
+            description: 'A winding path through sandy dunes',
+            thumbnail: 'assets/maps/desert_winds_thumb.svg',
+            background: 'assets/maps/desert_winds_bg.svg',
+            difficulty: 'Easy',
+            path: [
+                { x: 0, y: 300 },
+                { x: 150, y: 300 },
+                { x: 150, y: 150 },
+                { x: 350, y: 150 },
+                { x: 350, y: 450 },
+                { x: 550, y: 450 },
+                { x: 550, y: 250 },
+                { x: 750, y: 250 },
+                { x: 750, y: 400 },
+                { x: 950, y: 400 },
+                { x: 950, y: 150 },
+                { x: 1200, y: 150 }
+            ]
+        },
+        frozen_peaks: {
+            id: 'frozen_peaks',
+            name: 'Frozen Peaks',
+            description: 'Icy mountain passages with sharp turns',
+            thumbnail: 'assets/maps/frozen_peaks_thumb.svg',
+            background: 'assets/maps/frozen_peaks_bg.svg',
+            difficulty: 'Medium',
+            path: [
+                { x: 0, y: 500 },
+                { x: 180, y: 500 },
+                { x: 180, y: 180 },
+                { x: 420, y: 180 },
+                { x: 420, y: 400 },
+                { x: 220, y: 400 },
+                { x: 220, y: 550 },
+                { x: 600, y: 550 },
+                { x: 600, y: 300 },
+                { x: 800, y: 300 },
+                { x: 800, y: 500 },
+                { x: 1000, y: 500 },
+                { x: 1000, y: 200 },
+                { x: 1200, y: 200 }
+            ]
+        },
+        volcanic_maze: {
+            id: 'volcanic_maze',
+            name: 'Volcanic Maze',
+            description: 'Complex lava-filled pathways',
+            thumbnail: 'assets/maps/volcanic_maze_thumb.svg',
+            background: 'assets/maps/volcanic_maze_bg.svg',
+            difficulty: 'Hard',
+            path: [
+                { x: 0, y: 400 },
+                { x: 120, y: 400 },
+                { x: 120, y: 200 },
+                { x: 280, y: 200 },
+                { x: 280, y: 500 },
+                { x: 480, y: 500 },
+                { x: 480, y: 150 },
+                { x: 680, y: 150 },
+                { x: 680, y: 450 },
+                { x: 520, y: 450 },
+                { x: 520, y: 300 },
+                { x: 720, y: 300 },
+                { x: 720, y: 550 },
+                { x: 920, y: 550 },
+                { x: 920, y: 250 },
+                { x: 1080, y: 250 },
+                { x: 1080, y: 450 },
+                { x: 1200, y: 450 }
+            ]
+        },
+        ancient_ruins: {
+            id: 'ancient_ruins',
+            name: 'Ancient Ruins',
+            description: 'Mysterious pathways through old temples',
+            thumbnail: 'assets/maps/ancient_ruins_thumb.svg',
+            background: 'assets/maps/ancient_ruins_bg.svg',
+            difficulty: 'Medium',
+            path: [
+                { x: 0, y: 350 },
+                { x: 200, y: 350 },
+                { x: 200, y: 500 },
+                { x: 400, y: 500 },
+                { x: 400, y: 200 },
+                { x: 600, y: 200 },
+                { x: 600, y: 450 },
+                { x: 800, y: 450 },
+                { x: 800, y: 150 },
+                { x: 1000, y: 150 },
+                { x: 1000, y: 350 },
+                { x: 1200, y: 350 }
+            ]
+        }
+    },
+    
+    // Legacy path for backwards compatibility (when feature flag is off)
     PATH: [
         { x: 0, y: 400 },
         { x: 200, y: 400 },
@@ -257,7 +362,16 @@ const GameConfig = {
         bullet: 'assets/bullet_basic.svg',
         cannonBall: 'assets/bullet_cannon.svg',
         speakerOn: 'assets/speaker-on.svg',
-        speakerOff: 'assets/speaker-off.svg'
+        speakerOff: 'assets/speaker-off.svg',
+        // Map assets
+        desertWindsThumb: 'assets/maps/desert_winds_thumb.svg',
+        desertWindsBg: 'assets/maps/desert_winds_bg.svg',
+        frozenPeaksThumb: 'assets/maps/frozen_peaks_thumb.svg',
+        frozenPeaksBg: 'assets/maps/frozen_peaks_bg.svg',
+        volcanicMazeThumb: 'assets/maps/volcanic_maze_thumb.svg',
+        volcanicMazeBg: 'assets/maps/volcanic_maze_bg.svg',
+        ancientRuinsThumb: 'assets/maps/ancient_ruins_thumb.svg',
+        ancientRuinsBg: 'assets/maps/ancient_ruins_bg.svg'
     },
     
     // Effect settings
