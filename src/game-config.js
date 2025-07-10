@@ -228,21 +228,11 @@ const GameConfig = {
         gameOverStatsFontSize: '32px'
     },
     
-    // Path coordinates
-    PATH: [
-        { x: 0, y: 400 },
-        { x: 200, y: 400 },
-        { x: 200, y: 200 },
-        { x: 400, y: 200 },
-        { x: 400, y: 500 },
-        { x: 600, y: 500 },
-        { x: 600, y: 300 },
-        { x: 800, y: 300 },
-        { x: 800, y: 400 },
-        { x: 1000, y: 400 },
-        { x: 1000, y: 200 },
-        { x: 1200, y: 200 }
-    ],
+    // Map configuration
+    MAPS: {
+        default: 'assets/maps/default-map.js',
+        spiral: 'assets/maps/spiral-map.js'
+    },
     
     // Asset paths
     ASSETS: {
@@ -253,7 +243,7 @@ const GameConfig = {
         enemy: 'assets/enemy_basic.svg',
         strongEnemy: 'assets/enemy_strong.svg',
         bossEnemy: 'assets/enemy_boss.svg',
-        enemyPath: 'assets/enemy_path_no_bg.svg',
+        enemyPath: 'assets/maps/enemy_path_no_bg.svg',
         bullet: 'assets/bullet_basic.svg',
         cannonBall: 'assets/bullet_cannon.svg',
         speakerOn: 'assets/speaker-on.svg',

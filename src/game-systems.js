@@ -144,8 +144,9 @@ class WaveManager {
 
 // Path Manager Class
 class PathManager {
-    constructor() {
-        this.path = GameConfig.PATH;
+    constructor(mapConfig = null) {
+        this.mapConfig = mapConfig || DefaultMap;
+        this.path = this.mapConfig.path;
     }
 
     getPath() {

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Enemy Path - Brown road -->
+  <path 
+    d="M 0 400 L 200 400 L 200 200 L 400 200 L 400 600 L 600 600 L 600 150 L 800 150 L 800 650 L 1000 650 L 1000 300 L 1200 300" 
+    stroke="#8b4513" 
+    stroke-width="60" 
+    stroke-linecap="round" 
+    stroke-linejoin="round" 
+    fill="none"
+  />
+  
+  <!-- Path border/outline for better definition -->
+  <path 
+    d="M 0 400 L 200 400 L 200 200 L 400 200 L 400 600 L 600 600 L 600 150 L 800 150 L 800 650 L 1000 650 L 1000 300 L 1200 300" 
+    stroke="#654321" 
+    stroke-width="64" 
+    stroke-linecap="round" 
+    stroke-linejoin="round" 
+    fill="none"
+    opacity="0.3"
+  />
+  
+  <!-- Path center line for road markings -->
+  <path 
+    d="M 0 400 L 200 400 L 200 200 L 400 200 L 400 600 L 600 600 L 600 150 L 800 150 L 800 650 L 1000 650 L 1000 300 L 1200 300" 
+    stroke="#ffffff" 
+    stroke-width="2" 
+    stroke-linecap="round" 
+    stroke-linejoin="round" 
+    fill="none"
+    opacity="0.4"
+    stroke-dasharray="10,10"
+  />
+</svg> 
