@@ -112,15 +112,17 @@ class TowerDefenseGame extends Phaser.Scene {
         this.load.image('cannonTower', GameConfig.ASSETS.cannonTower);
         this.load.image('multishotTower', GameConfig.ASSETS.multishotTower);
         
-        // Load the appropriate map background
-        if (GameConfig.FEATURES.MAP_SELECTION && this.currentMapData.background !== 'enemyPath') {
-            // Load custom map background
-            const backgroundAsset = this.getBackgroundAssetPath(this.currentMapData.id);
-            this.load.image(this.currentMapData.background, backgroundAsset);
-        } else {
-            // Load default enemy path SVG
-            this.load.image('enemyPath', GameConfig.ASSETS.enemyPath);
+        // Load all map backgrounds upfront
+        if (GameConfig.FEATURES.MAP_SELECTION) {
+            console.log('Loading map backgrounds...');
+            this.load.image('desertWindsBg', GameConfig.ASSETS.desertWindsBg);
+            this.load.image('frozenPeaksBg', GameConfig.ASSETS.frozenPeaksBg);
+            this.load.image('volcanicMazeBg', GameConfig.ASSETS.volcanicMazeBg);
+            this.load.image('ancientRuinsBg', GameConfig.ASSETS.ancientRuinsBg);
         }
+        
+        // Always load the default enemy path SVG as fallback
+        this.load.image('enemyPath', GameConfig.ASSETS.enemyPath);
         
         // Load enemy sprites
         this.load.image('enemy', GameConfig.ASSETS.enemy);
@@ -300,11 +302,13 @@ class TowerDefenseGame extends Phaser.Scene {
                 this.responsiveConfig.SCALE
             );
 
+            console.log('Adding map background for mobile:', this.currentMapData.background);
             this.add.image(gameAreaCenterX, gameAreaCenterY, this.currentMapData.background)
                 .setOrigin(0.5)
                 .setScale(pathScale);
         } else {
             // For desktop/tablet: use original full-width positioning
+            console.log('Adding map background for desktop:', this.currentMapData.background);
             this.add.image(this.responsiveConfig.GAME_WIDTH / 2, this.responsiveConfig.GAME_HEIGHT / 2, this.currentMapData.background)
                 .setOrigin(0.5)
                 .setScale(this.responsiveConfig.SCALE);

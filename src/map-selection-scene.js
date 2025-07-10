@@ -16,6 +16,15 @@ class MapSelectionScene extends Phaser.Scene {
         this.load.image('frozenPeaksBg', GameConfig.ASSETS.frozenPeaksBg);
         this.load.image('volcanicMazeBg', GameConfig.ASSETS.volcanicMazeBg);
         this.load.image('ancientRuinsBg', GameConfig.ASSETS.ancientRuinsBg);
+        
+        // Add loading progress indicator
+        this.load.on('progress', (value) => {
+            console.log('Map Selection Scene Loading Progress:', Math.round(value * 100) + '%');
+        });
+        
+        this.load.on('complete', () => {
+            console.log('Map Selection Scene Assets Loaded Successfully');
+        });
     }
 
     create() {
@@ -89,11 +98,24 @@ class MapSelectionScene extends Phaser.Scene {
 
         // Map thumbnail
         const thumbnailKey = this.getAssetKeyFromPath(map.thumbnail);
-        const thumbnail = this.add.image(x, y - 30, thumbnailKey);
+        console.log('Creating thumbnail for map:', map.name, 'with key:', thumbnailKey, 'path:', map.thumbnail);
         
-        // Scale thumbnail to fit card
-        const thumbnailScale = Math.min((width - 20) / 200, (height - 80) / 150);
-        thumbnail.setScale(thumbnailScale);
+        // Check if the texture exists
+        if (!this.textures.exists(thumbnailKey)) {
+            console.error('Texture not found:', thumbnailKey);
+            // Create a placeholder rectangle instead
+            const placeholder = this.add.rectangle(x, y - 30, 100, 75, 0x666666);
+            placeholder.setStrokeStyle(2, 0x999999);
+        } else {
+            const thumbnail = this.add.image(x, y - 30, thumbnailKey);
+            
+            // Scale thumbnail to fit card
+            const thumbnailScale = Math.min((width - 20) / 200, (height - 80) / 150);
+            thumbnail.setScale(thumbnailScale);
+            
+            // Store reference for hover effects
+            this.thumbnailRef = thumbnail;
+        }
 
         // Map name
         const nameText = this.add.text(x, y + height/2 - 35, map.name, {
@@ -129,14 +151,18 @@ class MapSelectionScene extends Phaser.Scene {
         hitArea.on('pointerover', () => {
             cardBg.setStrokeStyle(3, 0x0984e3);
             cardBg.setScale(1.02);
-            thumbnail.setScale(thumbnailScale * 1.02);
+            if (this.thumbnailRef) {
+                this.thumbnailRef.setScale(thumbnailScale * 1.02);
+            }
             nameText.setScale(1.05);
         });
 
         hitArea.on('pointerout', () => {
             cardBg.setStrokeStyle(2, 0x74b9ff);
             cardBg.setScale(1);
-            thumbnail.setScale(thumbnailScale);
+            if (this.thumbnailRef) {
+                this.thumbnailRef.setScale(thumbnailScale);
+            }
             nameText.setScale(1);
         });
 
