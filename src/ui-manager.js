@@ -114,100 +114,47 @@ class UIManager {
     }
 
     createStatsPanel() {
-        // Get responsive configuration
-        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
-        
         // Create stats panel as a horizontal bar at the top
-        const statsPanel = this.scene.add.rectangle(0, 0, responsiveConfig.GAME_WIDTH, responsiveConfig.UI_TOP_HEIGHT, 
+        const statsPanel = this.scene.add.rectangle(0, 0, GameConfig.GAME_WIDTH, GameConfig.UI_TOP_HEIGHT, 
             GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
             .setOrigin(0, 0);
         
-        // Calculate text positions based on screen size
-        let healthX, moneyX, waveX, enemiesX, textY;
+        // Desktop horizontal layout
+        const healthX = 40;
+        const moneyX = 300;
+        const waveX = 560;
+        const enemiesX = 820;
+        const textY = 25;
         
-        if (responsiveConfig.IS_MOBILE) {
-            // Stack stats vertically on mobile
-            healthX = 10;
-            moneyX = 10;
-            waveX = 10;
-            enemiesX = 10;
-            textY = 15;
-            const lineHeight = 20;
-            
-            this.healthText = this.scene.add.text(healthX, textY, `Health: ${this.scene.health}`, {
-                fontSize: responsiveConfig.TEXT_FONT_SIZE,
-                fill: GameConfig.COLORS.HEALTH_TEXT
-            }).setOrigin(0, 0);
+        this.healthText = this.scene.add.text(healthX, textY, `Health: ${this.scene.health}`, {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: GameConfig.COLORS.HEALTH_TEXT
+        }).setOrigin(0, 0);
 
-            this.moneyText = this.scene.add.text(moneyX, textY + lineHeight, `Money: ${this.scene.money}`, {
-                fontSize: responsiveConfig.TEXT_FONT_SIZE,
-                fill: GameConfig.COLORS.MONEY_TEXT
-            }).setOrigin(0, 0);
+        this.moneyText = this.scene.add.text(moneyX, textY, `Money: ${this.scene.money}`, {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: GameConfig.COLORS.MONEY_TEXT
+        }).setOrigin(0, 0);
 
-            this.waveText = this.scene.add.text(waveX, textY + lineHeight * 2, `Wave: ${this.scene.wave}`, {
-                fontSize: responsiveConfig.TEXT_FONT_SIZE,
-                fill: GameConfig.COLORS.WAVE_TEXT
-            }).setOrigin(0, 0);
+        this.waveText = this.scene.add.text(waveX, textY, `Wave: ${this.scene.wave}`, {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: GameConfig.COLORS.WAVE_TEXT
+        }).setOrigin(0, 0);
 
-            this.enemiesText = this.scene.add.text(enemiesX, textY + lineHeight * 3, `Enemies: ${this.scene.enemiesInWave - this.scene.enemiesSpawned}`, {
-                fontSize: responsiveConfig.TEXT_FONT_SIZE,
-                fill: GameConfig.COLORS.ENEMIES_TEXT
-            }).setOrigin(0, 0);
-        } else {
-            // Horizontal layout for larger screens
-            healthX = 40;
-            moneyX = 300;
-            waveX = 560;
-            enemiesX = 820;
-            textY = 25;
-            
-            this.healthText = this.scene.add.text(healthX, textY, `Health: ${this.scene.health}`, {
-                fontSize: responsiveConfig.TEXT_FONT_SIZE,
-                fill: GameConfig.COLORS.HEALTH_TEXT
-            }).setOrigin(0, 0);
-
-            this.moneyText = this.scene.add.text(moneyX, textY, `Money: ${this.scene.money}`, {
-                fontSize: responsiveConfig.TEXT_FONT_SIZE,
-                fill: GameConfig.COLORS.MONEY_TEXT
-            }).setOrigin(0, 0);
-
-            this.waveText = this.scene.add.text(waveX, textY, `Wave: ${this.scene.wave}`, {
-                fontSize: responsiveConfig.TEXT_FONT_SIZE,
-                fill: GameConfig.COLORS.WAVE_TEXT
-            }).setOrigin(0, 0);
-
-            this.enemiesText = this.scene.add.text(enemiesX, textY, `Enemies: ${this.scene.enemiesInWave - this.scene.enemiesSpawned}`, {
-                fontSize: responsiveConfig.TEXT_FONT_SIZE,
-                fill: GameConfig.COLORS.ENEMIES_TEXT
-            }).setOrigin(0, 0);
-        }
+        this.enemiesText = this.scene.add.text(enemiesX, textY, `Enemies: ${this.scene.enemiesInWave - this.scene.enemiesSpawned}`, {
+            fontSize: GameConfig.UI.textFontSize,
+            fill: GameConfig.COLORS.ENEMIES_TEXT
+        }).setOrigin(0, 0);
         
         // Create sound toggle button on the right side
         this.createSoundToggleButton();
-        
-        // Create full-screen toggle button (only on mobile)
-        if (responsiveConfig.IS_MOBILE) {
-            this.createFullScreenToggleButton();
-        }
     }
 
     createButtonPanel() {
-        // Get responsive configuration
-        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
-        
-        // Create button panel background based on device type
-        let buttonPanel;
-        if (responsiveConfig.IS_MOBILE) {
-            // Create right-side button panel for mobile
-            buttonPanel = this.scene.add.rectangle(responsiveConfig.GAME_AREA_RIGHT, 0, responsiveConfig.UI_RIGHT_WIDTH, 
-                responsiveConfig.GAME_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
-                .setOrigin(0, 0);
-        } else {
-            // Create bottom button panel for desktop/tablet
-            buttonPanel = this.scene.add.rectangle(0, responsiveConfig.GAME_AREA_BOTTOM, responsiveConfig.GAME_WIDTH, 
-                responsiveConfig.UI_BOTTOM_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
-                .setOrigin(0, 0);
-        }
+        // Create bottom button panel for desktop
+        const buttonPanel = this.scene.add.rectangle(0, GameConfig.GAME_AREA_BOTTOM, GameConfig.GAME_WIDTH, 
+            GameConfig.UI_BOTTOM_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
+            .setOrigin(0, 0);
 
         // --- Tower Button Group ---
         this.createTowerButtonGroup();
@@ -216,80 +163,24 @@ class UIManager {
         // --- Wave Control Group ---
         this.createWaveControlGroup();
 
-        // Arrange groups based on screen size
-        if (responsiveConfig.IS_MOBILE) {
-            this.arrangeMobileLayout();
-        } else {
-            this.arrangeDesktopLayout();
-        }
+        // Arrange groups for desktop layout
+        this.arrangeDesktopLayout();
         
         // Ensure correct button is visible on game start
         this.updateWaveControlButtons();
     }
 
-    arrangeMobileLayout() {
-        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
-        const margin = 8;
-        const spacing = 12;
-        
-        // Position all button groups vertically on the right side
-        const rightPanelX = responsiveConfig.GAME_AREA_RIGHT + margin;
-        let currentY = responsiveConfig.UI_TOP_HEIGHT + margin;
-        
-        // Position tower buttons at the top of the right panel
-        this.towerButtonGroup.x = rightPanelX;
-        this.towerButtonGroup.y = currentY;
-        
-        // Stack tower buttons vertically since we have limited horizontal space
-        this.rearrangeTowerButtonsVertically();
-        
-        // Position wave control buttons below tower buttons
-        currentY += this.getTowerButtonGroupHeight() + spacing;
-        this.waveControlGroup.x = rightPanelX;
-        this.waveControlGroup.y = currentY;
-        
-        // Position upgrade buttons below wave controls
-        currentY += this._towerButtonHeight + spacing;
-        this.upgradeButtonGroup.x = rightPanelX;
-        this.upgradeButtonGroup.y = currentY;
-    }
-
-    rearrangeTowerButtonsVertically() {
-        // Rearrange tower buttons in a vertical stack for mobile
-        const spacing = this._towerButtonSpacing;
-        this.towerButtons.forEach((button, i) => {
-            button.parentContainer.x = 0;
-            button.parentContainer.y = i * (this._towerButtonHeight + spacing);
-        });
-        
-        // Update container dimensions
-        this.towerButtonGroup.width = this._towerButtonWidth;
-        this.towerButtonGroup.height = this.towerButtons.length * this._towerButtonHeight + 
-                                       (this.towerButtons.length - 1) * spacing;
-    }
-
-    getTowerButtonGroupHeight() {
-        // Calculate total height of the tower button group
-        if (this.scene.responsiveConfig.IS_MOBILE) {
-            return this.towerButtons.length * this._towerButtonHeight + 
-                   (this.towerButtons.length - 1) * this._towerButtonSpacing;
-        } else {
-            return this._towerButtonHeight;
-        }
-    }
-
     arrangeDesktopLayout() {
-        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
         const leftMargin = 24;
         const rightMargin = 24;
         const spacing = 16;
-        const buttonY = responsiveConfig.GAME_AREA_BOTTOM + (responsiveConfig.UI_BOTTOM_HEIGHT - (this._towerButtonHeight || 48)) / 2;
+        const buttonY = GameConfig.GAME_AREA_BOTTOM + (GameConfig.UI_BOTTOM_HEIGHT - (this._towerButtonHeight || 48)) / 2;
         
         this.towerButtonGroup.x = leftMargin;
         this.towerButtonGroup.y = buttonY;
         
         // Position wave control group on the right
-        this.waveControlGroup.x = responsiveConfig.GAME_WIDTH - this.waveControlGroup.width - rightMargin;
+        this.waveControlGroup.x = GameConfig.GAME_WIDTH - this.waveControlGroup.width - rightMargin;
         this.waveControlGroup.y = buttonY;
         
         // Position upgrade button group so its right edge is one button width to the left of the Start Wave button
@@ -298,16 +189,13 @@ class UIManager {
     }
 
     createTowerButtonGroup() {
-        // Get responsive configuration
-        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
-        
         this.towerButtonGroup = this.scene.add.container(0, 0);
         this.towerButtons = [];
         
-        // Use responsive button dimensions
-        const buttonWidth = responsiveConfig.BUTTON_WIDTH;
-        const buttonHeight = responsiveConfig.BUTTON_HEIGHT;
-        const spacing = responsiveConfig.TOWER_BUTTON_SPACING;
+        // Use fixed button dimensions
+        const buttonWidth = GameConfig.UI.buttonWidth;
+        const buttonHeight = GameConfig.UI.buttonHeight;
+        const spacing = GameConfig.UI.buttonSpacing;
         
         TOWER_TYPES.forEach((tower, i) => {
             const btn = this.createTowerButton((buttonWidth + spacing) * i, 0, tower.label, tower.type, tower.cost, buttonWidth, buttonHeight);
@@ -395,12 +283,9 @@ class UIManager {
             .setOrigin(0, 0)
             .setVisible(false);
 
-        // Get responsive configuration for font size
-        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
-        
-        // Add text (responsive font, centered)
+        // Add text (centered)
         const buttonText = this.scene.add.text(width / 2, height / 2, text, {
-            fontSize: responsiveConfig.BUTTON_FONT_SIZE,
+            fontSize: GameConfig.UI.buttonFontSize,
             fill: '#fff',
             fontFamily: 'Arial',
             fontStyle: 'bold',
@@ -532,12 +417,9 @@ class UIManager {
             .setOrigin(0, 0)
             .setVisible(false);
 
-        // Get responsive configuration for font size
-        const responsiveConfig = this.scene.responsiveConfig || window.responsiveConfig.getGameConfig();
-        
         // Add text centered within the button
         const startWaveText = this.scene.add.text(GameConfig.UI.startWaveButtonWidth / 2, GameConfig.UI.startWaveButtonHeight / 2, 'Start Wave', {
-            fontSize: responsiveConfig.TEXT_FONT_SIZE,
+            fontSize: GameConfig.UI.textFontSize,
             fill: '#fff',
             fontFamily: 'Arial',
             fontStyle: 'bold'
@@ -774,12 +656,7 @@ class UIManager {
         this.enemiesText.setText(`Enemies: ${this.scene.enemiesInWave - this.scene.enemiesSpawned}`);
     }
 
-    handleResize(newConfig) {
-        // Update UI positioning based on new configuration
-        // This is a basic implementation - in a full responsive system,
-        // you might want to recreate the entire UI
-        console.log('UI resize handled with new config:', newConfig);
-    }
+
 
     showGameOver() {
         this.gameOverScreen.setVisible(true);
@@ -1305,136 +1182,7 @@ class UIManager {
             this.scene.sound.setMute(true);
         }
     }
-    
-    createFullScreenToggleButton() {
-        const rightMargin = 24; // Distance from right edge of game area
-        const buttonSize = 48; // Match tower button height for consistent spacing
-        const buttonX = GameConfig.GAME_WIDTH - rightMargin - buttonSize * 1.5; // Position to the left of sound button
-        const buttonY = GameConfig.UI_TOP_HEIGHT / 2; // Center vertically within the stats panel
-        
-        // Create button container
-        const buttonContainer = this.scene.add.container(buttonX, buttonY);
-        
-        // Create button background
-        const button = this.scene.add.rectangle(0, 0, buttonSize, buttonSize, 
-            GameConfig.COLORS.BUTTON_BLUE)
-            .setOrigin(0.5, 0.5)
-            .setInteractive();
 
-        // Add button shadow
-        const shadow = this.scene.add.rectangle(1, 1, buttonSize, buttonSize, 
-            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
-            .setOrigin(0.5, 0.5);
-
-        // Create full-screen icons
-        const iconSize = 24; // Slightly smaller than sound icon
-        const fullScreenIcon = this.scene.add.text(0, 0, '⛶', {
-            fontSize: iconSize + 'px',
-            fill: '#ffffff',
-            fontFamily: 'Arial'
-        }).setOrigin(0.5, 0.5);
-
-        const exitFullScreenIcon = this.scene.add.text(0, 0, '⛶', {
-            fontSize: iconSize + 'px',
-            fill: '#ffffff',
-            fontFamily: 'Arial'
-        }).setOrigin(0.5, 0.5);
-
-        // Add all elements to container
-        buttonContainer.add([shadow, button, fullScreenIcon, exitFullScreenIcon]);
-
-        // Store references
-        button.fullScreenIcon = fullScreenIcon;
-        button.exitFullScreenIcon = exitFullScreenIcon;
-        button.isFullScreen = false;
-
-        // Set initial state
-        this.updateFullScreenToggleState(button);
-
-        // Add hover effect
-        button.on('pointerover', () => {
-            this.scene.tweens.add({
-                targets: button,
-                scaleX: 1.1,
-                scaleY: 1.1,
-                duration: 100,
-                ease: 'Power2'
-            });
-        });
-
-        button.on('pointerout', () => {
-            this.scene.tweens.add({
-                targets: button,
-                scaleX: 1,
-                scaleY: 1,
-                duration: 100,
-                ease: 'Power2'
-            });
-        });
-
-        // Add click effect
-        button.on('pointerdown', () => {
-            this.scene.tweens.add({
-                targets: button,
-                scaleX: 0.9,
-                scaleY: 0.9,
-                duration: 50,
-                yoyo: true,
-                ease: 'Power2'
-            });
-        });
-
-        button.on('pointerup', () => {
-            this.toggleFullScreen(button);
-        });
-
-        this.fullScreenToggleButton = button;
-    }
-
-    updateFullScreenToggleState(button) {
-        if (button.isFullScreen) {
-            button.fullScreenIcon.setVisible(false);
-            button.exitFullScreenIcon.setVisible(true);
-            button.setFillStyle(GameConfig.COLORS.BUTTON_GREEN);
-        } else {
-            button.fullScreenIcon.setVisible(true);
-            button.exitFullScreenIcon.setVisible(false);
-            button.setFillStyle(GameConfig.COLORS.BUTTON_BLUE);
-        }
-    }
-
-    toggleFullScreen(button) {
-        button.isFullScreen = !button.isFullScreen;
-        this.updateFullScreenToggleState(button);
-        
-        if (button.isFullScreen) {
-            this.requestFullScreen();
-        } else {
-            this.exitFullScreen();
-        }
-    }
-    
-    requestFullScreen() {
-        const elem = document.documentElement;
-        
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { // Safari
-            elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { // IE/Edge
-            elem.msRequestFullscreen();
-        }
-    }
-    
-    exitFullScreen() {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) { // Safari
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { // IE/Edge
-            document.msExitFullscreen();
-        }
-    }
 }
 
 // Export for Node/CommonJS and also attach to window for browser

@@ -1,4 +1,4 @@
-// Game Initialization with Responsive Configuration
+// Game Initialization - Desktop Only
 class GameInitializer {
     constructor() {
         this.game = null;
@@ -6,24 +6,16 @@ class GameInitializer {
     }
 
     init() {
-        // Wait for responsive config to be ready
-        if (window.responsiveConfig) {
-            this.createGame();
-        } else {
-            // Fallback if responsive config isn't loaded yet
-            setTimeout(() => this.init(), 100);
-        }
+        this.createGame();
     }
 
     createGame() {
-        const responsiveConfig = window.responsiveConfig.getGameConfig();
-        
-        // Create Phaser game configuration
+        // Create Phaser game configuration with fixed desktop dimensions
         const config = {
             type: Phaser.AUTO,
             parent: 'gameContainer',
-            width: responsiveConfig.GAME_WIDTH,
-            height: responsiveConfig.GAME_HEIGHT,
+            width: GameConfig.GAME_WIDTH,
+            height: GameConfig.GAME_HEIGHT,
             backgroundColor: GameConfig.COLORS.BACKGROUND,
             physics: {
                 default: 'arcade',
@@ -36,37 +28,17 @@ class GameInitializer {
             scale: {
                 mode: Phaser.Scale.FIT,
                 autoCenter: Phaser.Scale.CENTER_BOTH,
-                width: responsiveConfig.GAME_WIDTH,
-                height: responsiveConfig.GAME_HEIGHT,
+                width: GameConfig.GAME_WIDTH,
+                height: GameConfig.GAME_HEIGHT,
                 parent: 'gameContainer'
             },
             dom: {
                 createContainer: true
-            },
-            input: {
-                touch: {
-                    capture: true
-                }
             }
         };
 
         // Create the game instance
         this.game = new Phaser.Game(config);
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (this.game && this.game.scale) {
-                const newConfig = window.responsiveConfig.getGameConfig();
-                
-                // Update the scale configuration
-                this.game.scale.setGameSize(newConfig.GAME_WIDTH, newConfig.GAME_HEIGHT);
-                
-                // Notify the scene about the resize
-                if (this.game.scene.getScene('TowerDefenseGame')) {
-                    this.game.scene.getScene('TowerDefenseGame').handleResize(newConfig);
-                }
-            }
-        });
     }
 }
 

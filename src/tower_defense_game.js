@@ -1,52 +1,23 @@
 class TowerDefenseGame extends Phaser.Scene {
-    // Pause/resume and speed control for UIManager
+    constructor() {
+        super({ key: 'TowerDefenseGame' });
+    }
+
     pauseGame() {
-        this._isPaused = true;
-        this.physics.world.isPaused = true;
-        this.time.timeScale = 0;
-        if (this.waveManager && this.waveManager.spawnTimer) this.waveManager.spawnTimer.paused = true;
+        if (!this.gameStateManager.gameOver) {
+            this._isPaused = true;
+        }
     }
 
     resumeGame() {
         this._isPaused = false;
-        this.physics.world.isPaused = false;
-        this.time.timeScale = this._gameSpeed || 1;
-        if (this.waveManager && this.waveManager.spawnTimer) this.waveManager.spawnTimer.paused = false;
     }
 
     setGameSpeed(mult) {
-        this._gameSpeed = mult;
-        if (!this.physics.world.isPaused) {
-            this.time.timeScale = mult;
-        }
-
-        // Adjust tower fire rates
-        if (this.towers && this.towers.children && this.towers.children.entries) {
-            this.towers.children.entries.forEach(tower => {
-                if (!tower._originalFireRate) {
-                    tower._originalFireRate = tower.fireRate;
-                }
-                if (mult === 1) {
-                    tower.fireRate = tower._originalFireRate;
-                } else {
-                    tower.fireRate = tower._originalFireRate / mult;
-                }
-            });
-        }
-
-        // Adjust enemy speeds (apply to all current and future enemies)
-        this._enemySpeedMult = mult;
-        if (this.enemies && this.enemies.children && this.enemies.children.entries) {
-            this.enemies.children.entries.forEach(enemy => {
-                // Always use the true base speed for scaling
-                if (typeof enemy.baseSpeed === 'number') {
-                    enemy.speed = enemy.baseSpeed * mult;
-                }
-            });
-        }
-    }
-    constructor() {
-        super({ key: 'TowerDefenseGame' });
+        this.physics.world.timeScale = mult;
+        this.time.timeScale = mult;
+        this.anims.globalTimeScale = mult;
+        this.sound.setRate(mult);
     }
 
     preload() {
@@ -102,6 +73,7 @@ class TowerDefenseGame extends Phaser.Scene {
         graphics4.fillCircle(20, 20, 3);
         graphics4.generateTexture('ghostMultishotTower', 40, 40);
         graphics4.destroy();
+        
         // Ghost Basic Tower (semi-transparent)
         const graphics1 = this.add.graphics();
         graphics1.fillStyle(GameConfig.COLORS.GHOST_BASIC_BASE, GameConfig.COLORS.GHOST_TOWER_ALPHA);
@@ -178,38 +150,7 @@ class TowerDefenseGame extends Phaser.Scene {
         invalidGraphics.destroy();
     }
 
-    createGameAreaBorders() {
-        // Create border lines to indicate game area boundaries
-        const graphics = this.add.graphics();
-        
-        // Set line style for the borders
-        graphics.lineStyle(3, 0x000000, 1); // Black color, 3px width, full opacity
-        
-        // Calculate border positions based on responsive configuration
-        const leftBorderX = this.responsiveConfig.GAME_AREA_LEFT;
-        const rightBorderX = this.responsiveConfig.GAME_AREA_RIGHT;
-        const topY = this.responsiveConfig.GAME_AREA_TOP;
-        const bottomY = this.responsiveConfig.GAME_AREA_BOTTOM;
-        
-        // Draw left border line
-        graphics.beginPath();
-        graphics.moveTo(leftBorderX, topY);
-        graphics.lineTo(leftBorderX, bottomY);
-        graphics.strokePath();
-        
-        // Draw right border line (only if there's a right UI panel)
-        if (this.responsiveConfig.UI_RIGHT_WIDTH > 0) {
-            graphics.beginPath();
-            graphics.moveTo(rightBorderX, topY);
-            graphics.lineTo(rightBorderX, bottomY);
-            graphics.strokePath();
-        }
-    }
-
     create() {
-        // Get responsive configuration
-        this.responsiveConfig = window.responsiveConfig.getGameConfig();
-        
         // Initialize game systems
         this.pathManager = new PathManager();
         this.gameStateManager = new GameStateManager(this);
@@ -217,38 +158,12 @@ class TowerDefenseGame extends Phaser.Scene {
         this.towerPlacementManager = new TowerPlacementManager(this, this.pathManager);
         this.effectsManager = new EffectsManager(this);
         
-        // Get scaled path from path manager
+        // Get path from path manager
         this.path = this.pathManager.getPath();
 
-        // Add the enemy path SVG image with appropriate positioning
-        if (this.responsiveConfig.IS_MOBILE) {
-            // For mobile: position within the game area with reduced scaling
-            const gameAreaCenterX = (this.responsiveConfig.GAME_AREA_LEFT + this.responsiveConfig.GAME_AREA_RIGHT) / 2;
-            const gameAreaCenterY = (this.responsiveConfig.GAME_AREA_TOP + this.responsiveConfig.GAME_AREA_BOTTOM) / 2;
-            
-            // Calculate appropriate scale to fit the path within the visible game area
-            const gameAreaWidth = this.responsiveConfig.GAME_AREA_RIGHT - this.responsiveConfig.GAME_AREA_LEFT;
-            const gameAreaHeight = this.responsiveConfig.GAME_AREA_BOTTOM - this.responsiveConfig.GAME_AREA_TOP;
-            
-            // Use a scale that fits the path within 90% of the available game area
-            const pathScale = Math.min(
-                (gameAreaWidth * 0.9) / 1200, // 1200 is the original path width
-                (gameAreaHeight * 0.9) / 600, // Approximate original path height
-                this.responsiveConfig.SCALE
-            );
-
-            this.add.image(gameAreaCenterX, gameAreaCenterY, 'enemyPath')
-                .setOrigin(0.5)
-                .setScale(pathScale);
-        } else {
-            // For desktop/tablet: use original full-width positioning
-            this.add.image(this.responsiveConfig.GAME_WIDTH / 2, this.responsiveConfig.GAME_HEIGHT / 2, 'enemyPath')
-                .setOrigin(0.5)
-                .setScale(this.responsiveConfig.SCALE);
-        }
-
-        // Add border lines to indicate game area boundaries
-        this.createGameAreaBorders();
+        // Add the enemy path SVG image centered
+        this.add.image(GameConfig.GAME_WIDTH / 2, GameConfig.GAME_HEIGHT / 2, 'enemyPath')
+            .setOrigin(0.5);
 
         // Create groups
         this.towers = this.add.group();
@@ -264,33 +179,17 @@ class TowerDefenseGame extends Phaser.Scene {
             this.sound.setMute(true);
         }
 
-        // Input handling
-        this.input.on('pointerdown', this.handlePointerDown, this);
+        // Input handling - desktop only
+        this.input.on('pointerdown', this.handleClick, this);
         this.input.on('pointermove', this.handleMouseMove, this);
-        this.input.on('pointerup', this.handlePointerUp, this);
 
         // Set up physics overlap for bullet-enemy collisions
         this.physics.add.overlap(this.bullets, this.enemies, this.handleBulletEnemyCollision, null, this);
     }
 
-    handlePointerDown(pointer) {
-        // Handle gesture controls for mobile
-        if (this.responsiveConfig.IS_MOBILE) {
-            this.towerPlacementManager.handlePointerDown(pointer);
-        } else {
-            // Desktop behavior - immediate click handling
-            this.handleClick(pointer);
-        }
-    }
-
     handleMouseMove(pointer) {
-        // Handle gesture controls for mobile
-        if (this.responsiveConfig.IS_MOBILE) {
-            this.towerPlacementManager.handlePointerMove(pointer);
-        } else {
-            // Desktop behavior - ghost tower preview
-            this.towerPlacementManager.handleMouseMove(pointer);
-        }
+        // Desktop behavior - ghost tower preview
+        this.towerPlacementManager.handleMouseMove(pointer);
         
         // Update tooltips
         if (this.uiManager && this.uiManager.updateTooltipPosition) {
@@ -298,21 +197,6 @@ class TowerDefenseGame extends Phaser.Scene {
         }
         if (this.uiManager && this.uiManager.updateEnemyTooltipPosition) {
             this.uiManager.updateEnemyTooltipPosition(pointer.worldX, pointer.worldY);
-        }
-    }
-
-    handlePointerUp(pointer) {
-        // Handle gesture controls for mobile
-        if (this.responsiveConfig.IS_MOBILE) {
-            this.towerPlacementManager.handlePointerUp(pointer);
-            
-            // Hide tooltips on touch end for better mobile experience
-            if (this.uiManager && this.uiManager.hideTooltip) {
-                this.uiManager.hideTooltip();
-            }
-            if (this.uiManager && this.uiManager.hideEnemyTooltip) {
-                this.uiManager.hideEnemyTooltip();
-            }
         }
     }
 
@@ -382,6 +266,7 @@ class TowerDefenseGame extends Phaser.Scene {
         this.uiManager.updateUI();
         this.uiManager.updateAllButtonStates();
     }
+
     update(time, delta) {
         if (this.gameStateManager.gameOver) return;
         if (this._isPaused) return;
@@ -496,21 +381,6 @@ class TowerDefenseGame extends Phaser.Scene {
         this.uiManager.updateUI();
     }
 
-    handleResize(newConfig) {
-        // Update responsive configuration
-        this.responsiveConfig = newConfig;
-        
-        // Update UI manager if it exists
-        if (this.uiManager) {
-            this.uiManager.handleResize(newConfig);
-        }
-        
-        // Update path manager with new scaled path
-        if (this.pathManager) {
-            this.pathManager.path = window.responsiveConfig.getScaledPath();
-        }
-    }
-
     // Getters for backward compatibility
     get health() { return this.gameStateManager.health; }
     set health(value) { this.gameStateManager.health = value; }
@@ -545,5 +415,3 @@ class TowerDefenseGame extends Phaser.Scene {
     get enemiesDefeated() { return this.gameStateManager.enemiesDefeated; }
     set enemiesDefeated(value) { this.gameStateManager.enemiesDefeated = value; }
 }
-
-// Game initialization is now handled by game-init.js
