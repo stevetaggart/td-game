@@ -164,6 +164,8 @@ class PathManager {
 
     async initializeSmoothPath() {
         try {
+            console.log('Initializing smooth path for:', this.mapName);
+            console.log('SVG path data:', this.mapConfig.svgPathData);
             await this.smoothPathManager.loadPathFromSVG(this.mapName, this.mapConfig.svgPathData);
             console.log(`Smooth path initialized for ${this.mapName}`);
         } catch (error) {
