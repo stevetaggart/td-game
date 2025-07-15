@@ -230,24 +230,24 @@ const GameConfig = {
     
     // Map configuration
     MAPS: {
-        default: 'assets/maps/default-map.js',
-        spiral: 'assets/maps/spiral-map.js'
+        default: './maps/default-map.js',
+        spiral: './maps/spiral-map.js'
     },
     
     // Asset paths
     ASSETS: {
-        basicTower: 'assets/basic_tower_topdown_40x40.svg',
-        rapidTower: 'assets/rapid_tower_topdown_40x40.svg',
-        cannonTower: 'assets/canon_tower_topdown_40x40.svg',
-        multishotTower: 'assets/multishot_tower_topdown_40x40.svg',
-        enemy: 'assets/enemy_basic.svg',
-        strongEnemy: 'assets/enemy_strong.svg',
-        bossEnemy: 'assets/enemy_boss.svg',
-        enemyPath: 'assets/maps/enemy_path_no_bg.svg',
-        bullet: 'assets/bullet_basic.svg',
-        cannonBall: 'assets/bullet_cannon.svg',
-        speakerOn: 'assets/speaker-on.svg',
-        speakerOff: 'assets/speaker-off.svg'
+        basicTower: '/assets/basic_tower_topdown_40x40.svg',
+        rapidTower: '/assets/rapid_tower_topdown_40x40.svg',
+        cannonTower: '/assets/canon_tower_topdown_40x40.svg',
+        multishotTower: '/assets/multishot_tower_topdown_40x40.svg',
+        enemy: '/assets/enemy_basic.svg',
+        strongEnemy: '/assets/enemy_strong.svg',
+        bossEnemy: '/assets/enemy_boss.svg',
+        enemyPath: '/assets/maps/enemy_path_no_bg.svg',
+        bullet: '/assets/bullet_basic.svg',
+        cannonBall: '/assets/bullet_cannon.svg',
+        speakerOn: '/assets/speaker-on.svg',
+        speakerOff: '/assets/speaker-off.svg'
     },
     
     // Effect settings

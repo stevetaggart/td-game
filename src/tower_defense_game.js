@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import GameConfig from './game-config.js';
-import DefaultMap from '../assets/maps/default-map.js';
+import DefaultMap from './maps/default-map.js';
 import { PathManager, GameStateManager, WaveManager, TowerPlacementManager } from './game-systems.js';
 import EffectsManager from './effects-manager.js';
 
@@ -78,8 +78,8 @@ class TowerDefenseGame extends Phaser.Scene {
         this.load.image('cannonBall', GameConfig.ASSETS.cannonBall);
         
         // Load sound effects
-        this.load.audio('shot', 'assets/sounds/shot_01.ogg');
-        this.load.audio('cannon', 'assets/sounds/cannon_01.ogg');
+        this.load.audio('shot', '/assets/sounds/shot_01.ogg');
+        this.load.audio('cannon', '/assets/sounds/cannon_01.ogg');
         
         // Load UI icons
         this.load.image('speakerOn', GameConfig.ASSETS.speakerOn);
