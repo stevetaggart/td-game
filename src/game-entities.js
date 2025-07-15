@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import GameConfig from './game-config.js';
+import { SmoothPathFollower } from './path-manager.js';
 // Game Entity Classes
 
 // Tower Class
@@ -242,7 +243,7 @@ class Tower extends Phaser.GameObjects.Sprite {
 
 // Enemy Class
 class Enemy extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, enemyType, wave) {
+    constructor(scene, x, y, enemyType, wave, pathManager = null, mapName = null) {
         const config = GameConfig.ENEMIES[enemyType];
         super(scene, x, y, config.spriteKey);
         
@@ -250,6 +251,14 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.enemyType = enemyType;
         this.wave = wave;
         this.pathIndex = 0;
+        
+        // Initialize smooth path follower if path manager is provided
+        if (pathManager && mapName) {
+            this.pathFollower = new SmoothPathFollower(this, pathManager, mapName);
+            this.useSmoothPath = true;
+        } else {
+            this.useSmoothPath = false;
+        }
         
         // Calculate stats based on wave
         this.health = config.baseHealth + (wave - 1) * config.healthIncrease;
@@ -365,26 +374,34 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     move(delta, path) {
-        if (this.pathIndex >= path.length - 1) {
-            // Enemy reached the end
-            this.scene.health -= this.damageToPlayer;
-            if (this.scene && this.scene.uiManager && this.scene.uiManager.updateUI) {
-                this.scene.uiManager.updateUI();
-            }
-            this.destroy();
-            return false; // Enemy destroyed
-        }
-
-        const target = path[this.pathIndex + 1];
-        const distance = Phaser.Math.Distance.Between(this.x, this.y, target.x, target.y);
+        let isAlive = true;
         
-        if (distance < 5) {
-            this.pathIndex++;
+        // Use smooth path if available, otherwise fall back to traditional path
+        if (this.useSmoothPath && this.pathFollower) {
+            isAlive = this.pathFollower.update(delta);
         } else {
-            const moveDistance = (this.speed * delta) / 1000;
-            const angle = Phaser.Math.Angle.Between(this.x, this.y, target.x, target.y);
-            this.x += Math.cos(angle) * moveDistance;
-            this.y += Math.sin(angle) * moveDistance;
+            // Traditional path movement for backward compatibility
+            if (this.pathIndex >= path.length - 1) {
+                // Enemy reached the end
+                this.scene.health -= this.damageToPlayer;
+                if (this.scene && this.scene.uiManager && this.scene.uiManager.updateUI) {
+                    this.scene.uiManager.updateUI();
+                }
+                this.destroy();
+                return false; // Enemy destroyed
+            }
+
+            const target = path[this.pathIndex + 1];
+            const distance = Phaser.Math.Distance.Between(this.x, this.y, target.x, target.y);
+            
+            if (distance < 5) {
+                this.pathIndex++;
+            } else {
+                const moveDistance = (this.speed * delta) / 1000;
+                const angle = Phaser.Math.Angle.Between(this.x, this.y, target.x, target.y);
+                this.x += Math.cos(angle) * moveDistance;
+                this.y += Math.sin(angle) * moveDistance;
+            }
         }
 
         // Update health bar and boss label position
@@ -394,7 +411,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
             this.updateHealthBar();
         }
         
-        return true; // Enemy still alive
+        return isAlive;
     }
 
     takeDamage(damage) {

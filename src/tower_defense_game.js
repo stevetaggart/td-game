@@ -193,9 +193,15 @@ class TowerDefenseGame extends Phaser.Scene {
         this.currentMapConfig = DefaultMap;
     }
 
-    create() {
+    async create() {
         // Initialize game systems
         this.pathManager = new PathManager(this.currentMapConfig);
+        
+        // Wait for smooth path initialization if SVG data is available
+        if (this.currentMapConfig.svgPathData) {
+            await this.pathManager.initializeSmoothPath();
+        }
+        
         this.gameStateManager = new GameStateManager(this);
         this.waveManager = new WaveManager(this);
         this.towerPlacementManager = new TowerPlacementManager(this, this.pathManager);

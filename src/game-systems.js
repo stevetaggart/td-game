@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import GameConfig from './game-config.js';
 import { Tower, Enemy } from './game-entities.js';
+import { PathManager as SmoothPathManager } from './path-manager.js';
 // Simple Event System
 class EventSystem {
     constructor() {
@@ -96,7 +97,7 @@ class WaveManager {
 
         // Spawn super boss enemy on wave 30
         if (this.currentWave === GameConfig.ENEMIES.superBoss.spawnWave && this.enemiesSpawned === 0) {
-            const superBoss = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, 'superBoss', this.currentWave);
+            const superBoss = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, 'superBoss', this.currentWave, this.scene.pathManager.getSmoothPathManager(), this.scene.pathManager.getMapName());
             this.scene.enemies.add(superBoss);
             this.enemiesSpawned++;
             if (this.scene.effectsManager) {
@@ -107,7 +108,7 @@ class WaveManager {
 
         // Spawn boss enemy on wave 10
         if (this.currentWave === GameConfig.ENEMIES.boss.spawnWave && this.enemiesSpawned === 0) {
-            const boss = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, 'boss', this.currentWave);
+            const boss = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, 'boss', this.currentWave, this.scene.pathManager.getSmoothPathManager(), this.scene.pathManager.getMapName());
             this.scene.enemies.add(boss);
             this.enemiesSpawned++;
             if (this.scene.effectsManager) {
@@ -118,7 +119,7 @@ class WaveManager {
 
         // Use stronger enemies in later waves
         const enemyType = this.currentWave > GameConfig.WAVES.strongEnemyStartWave && Math.random() < GameConfig.WAVES.strongEnemyChance ? 'strong' : 'basic';
-        const enemy = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, enemyType, this.currentWave);
+        const enemy = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, enemyType, this.currentWave, this.scene.pathManager.getSmoothPathManager(), this.scene.pathManager.getMapName());
         this.scene.enemies.add(enemy);
         this.enemiesSpawned++;
     }
@@ -145,11 +146,29 @@ class WaveManager {
     }
 }
 
-// Path Manager Class
+// Enhanced Path Manager Class with Smooth Path Support
 class PathManager {
     constructor(mapConfig = null) {
-        this.mapConfig = mapConfig || DefaultMap;
+        this.mapConfig = mapConfig || { path: [] };
         this.path = this.mapConfig.path;
+        this.mapName = this.mapConfig.name || 'default';
+        
+        // Initialize smooth path manager
+        this.smoothPathManager = new SmoothPathManager();
+        
+        // Load smooth path if SVG data is available
+        if (this.mapConfig.svgPathData) {
+            this.initializeSmoothPath();
+        }
+    }
+
+    async initializeSmoothPath() {
+        try {
+            await this.smoothPathManager.loadPathFromSVG(this.mapName, this.mapConfig.svgPathData);
+            console.log(`Smooth path initialized for ${this.mapName}`);
+        } catch (error) {
+            console.error('Failed to initialize smooth path:', error);
+        }
     }
 
     getPath() {
@@ -162,6 +181,21 @@ class PathManager {
 
     getEndPoint() {
         return this.path[this.path.length - 1];
+    }
+
+    // Get the smooth path manager for enemy creation
+    getSmoothPathManager() {
+        return this.smoothPathManager;
+    }
+
+    // Get the map name for smooth path system
+    getMapName() {
+        return this.mapName;
+    }
+
+    // Check if smooth path is available
+    hasSmoothPath() {
+        return this.smoothPathManager && this.smoothPathManager.getPath(this.mapName);
     }
 
     canPlaceTower(x, y, existingTowers) {
