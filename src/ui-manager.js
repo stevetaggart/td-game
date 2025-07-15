@@ -1,3 +1,5 @@
+import GameConfig from './game-config.js';
+
 // --- Tower Button Config ---
 const TOWER_TYPES = [
     { type: 'basicTower', label: 'Basic Tower ($20)', cost: 20 },

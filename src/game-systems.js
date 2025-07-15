@@ -1,3 +1,6 @@
+import Phaser from 'phaser';
+import GameConfig from './game-config.js';
+import { Tower, Enemy } from './game-entities.js';
 // Simple Event System
 class EventSystem {
     constructor() {
@@ -93,29 +96,29 @@ class WaveManager {
 
         // Spawn super boss enemy on wave 30
         if (this.currentWave === GameConfig.ENEMIES.superBoss.spawnWave && this.enemiesSpawned === 0) {
-            const superBoss = new Enemy(this.scene, this.scene.path[0].x, this.scene.path[0].y, 'superBoss', this.currentWave);
+            const superBoss = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, 'superBoss', this.currentWave);
             this.scene.enemies.add(superBoss);
             this.enemiesSpawned++;
             if (this.scene.effectsManager) {
-                this.scene.effectsManager.createSuperBossSpawnEffect(this.scene.path[0].x, this.scene.path[0].y);
+                this.scene.effectsManager.createSuperBossSpawnEffect(this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y);
             }
             return;
         }
 
         // Spawn boss enemy on wave 10
         if (this.currentWave === GameConfig.ENEMIES.boss.spawnWave && this.enemiesSpawned === 0) {
-            const boss = new Enemy(this.scene, this.scene.path[0].x, this.scene.path[0].y, 'boss', this.currentWave);
+            const boss = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, 'boss', this.currentWave);
             this.scene.enemies.add(boss);
             this.enemiesSpawned++;
             if (this.scene.effectsManager) {
-                this.scene.effectsManager.createBossSpawnEffect(this.scene.path[0].x, this.scene.path[0].y);
+                this.scene.effectsManager.createBossSpawnEffect(this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y);
             }
             return;
         }
 
         // Use stronger enemies in later waves
         const enemyType = this.currentWave > GameConfig.WAVES.strongEnemyStartWave && Math.random() < GameConfig.WAVES.strongEnemyChance ? 'strong' : 'basic';
-        const enemy = new Enemy(this.scene, this.scene.path[0].x, this.scene.path[0].y, enemyType, this.currentWave);
+        const enemy = new Enemy(this.scene, this.scene.pathManager.path[0].x, this.scene.pathManager.path[0].y, enemyType, this.currentWave);
         this.scene.enemies.add(enemy);
         this.enemiesSpawned++;
     }
@@ -500,6 +503,4 @@ class TowerPlacementManager {
 }
 
 // Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { WaveManager, PathManager, GameStateManager, TowerPlacementManager, gameEvents: window.gameEvents };
-} 
+export { WaveManager, PathManager, GameStateManager, TowerPlacementManager }; 

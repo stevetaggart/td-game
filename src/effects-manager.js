@@ -1,3 +1,4 @@
+import GameConfig from './game-config.js';
 // Effects Manager Class
 class EffectsManager {
     constructor(scene) {
@@ -492,6 +493,4 @@ class EffectsManager {
 }
 
 // Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = EffectsManager;
-} 
+export default EffectsManager; 

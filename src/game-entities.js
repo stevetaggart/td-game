@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+import GameConfig from './game-config.js';
 // Game Entity Classes
 
 // Tower Class
@@ -520,6 +522,4 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 }
 
 // Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { Tower, Enemy, Bullet };
-}
+export { Tower, Enemy, Bullet };

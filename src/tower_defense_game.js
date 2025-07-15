@@ -1,3 +1,9 @@
+import Phaser from 'phaser';
+import GameConfig from './game-config.js';
+import DefaultMap from '../assets/maps/default-map.js';
+import { PathManager, GameStateManager, WaveManager, TowerPlacementManager } from './game-systems.js';
+import EffectsManager from './effects-manager.js';
+
 class TowerDefenseGame extends Phaser.Scene {
     // Pause/resume and speed control for UIManager
     pauseGame() {
@@ -195,8 +201,7 @@ class TowerDefenseGame extends Phaser.Scene {
         this.towerPlacementManager = new TowerPlacementManager(this, this.pathManager);
         this.effectsManager = new EffectsManager(this);
         
-        // Get path from path manager
-        this.path = this.pathManager.getPath();
+        // No longer need this.path; use this.pathManager instead
 
         // Add the enemy path SVG image instead of drawing with graphics
         this.add.image(GameConfig.GAME_WIDTH / 2, GameConfig.GAME_HEIGHT / 2, 'enemyPath').setOrigin(0.5);
@@ -307,7 +312,7 @@ class TowerDefenseGame extends Phaser.Scene {
         const enemiesArr = this.enemies.children.entries;
         for (let i = enemiesArr.length - 1; i >= 0; i--) {
             const enemy = enemiesArr[i];
-            const stillAlive = enemy.move(delta, this.path);
+            const stillAlive = enemy.move(delta, this.pathManager.path);
             if (!stillAlive) {
                 // Enemy was destroyed (reached end or died)
                 this.enemies.remove(enemy);
