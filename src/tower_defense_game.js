@@ -224,6 +224,37 @@ class TowerDefenseGame extends Phaser.Scene {
         this.input.on('pointerdown', this.handleClick, this);
         this.input.on('pointermove', this.handleMouseMove, this);
 
+        // Keyboard shortcuts for wave and speed control
+        this.input.keyboard.on('keydown', (event) => {
+            if (this.gameOver) return;
+            if (event.code === 'Space') {
+                if (!this.waveActive) {
+                    this.startWave();
+                } else {
+                    if (this._isPaused) {
+                        this.resumeGame();
+                        if (this.uiManager && this.uiManager.playPauseText) {
+                            this.uiManager.playPauseState = 'play';
+                            this.uiManager.playPauseText.setText('⏸');
+                        }
+                    } else {
+                        this.pauseGame();
+                        if (this.uiManager && this.uiManager.playPauseText) {
+                            this.uiManager.playPauseState = 'pause';
+                            this.uiManager.playPauseText.setText('▶️');
+                        }
+                    }
+                }
+            } else if ((event.key === '1' || event.key === '2') && this.waveActive) {
+                const speed = parseInt(event.key, 10);
+                this.setGameSpeed(speed);
+                if (this.uiManager && this.uiManager.speedText) {
+                    this.uiManager.speedState = speed;
+                    this.uiManager.speedText.setText(speed === 1 ? '2x' : '1x');
+                }
+            }
+        });
+
         // Set up physics overlap for bullet-enemy collisions
         this.physics.add.overlap(this.bullets, this.enemies, this.handleBulletEnemyCollision, null, this);
     }
