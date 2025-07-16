@@ -252,6 +252,47 @@ class TowerDefenseGame extends Phaser.Scene {
                     this.uiManager.speedState = speed;
                     this.uiManager.speedText.setText(speed === 1 ? '2x' : '1x');
                 }
+            } else if (['b','r','c','m','B','R','C','M'].includes(event.key)) {
+                // Keyboard shortcuts for tower buttons: b=basic, r=rapid, c=cannon, m=multishot
+                if (this.gameOver) return;
+                const keyToType = {
+                    b: 'basicTower',
+                    r: 'rapidTower',
+                    c: 'cannonTower',
+                    m: 'multishotTower',
+                    B: 'basicTower',
+                    R: 'rapidTower',
+                    C: 'cannonTower',
+                    M: 'multishotTower',
+                };
+                const type = keyToType[event.key];
+                if (type && this.uiManager && this.uiManager.towerButtons) {
+                    // Find the index in TOWER_TYPES (order matches towerButtons)
+                    const idx = ['basicTower','rapidTower','cannonTower','multishotTower'].indexOf(type);
+                    if (idx !== -1) {
+                        const container = this.uiManager.towerButtons[idx];
+                        if (container) {
+                            // Find the button by its custom type property
+                            const button = container.list.find(child => child.type === type);
+                            if (button && button.input && button.input.enabled && typeof this.uiManager.handleTowerButtonClick === 'function') {
+                                this.uiManager.handleTowerButtonClick(button, type);
+                            }
+                        }
+                    }
+                }
+            } else if (event.key === 'u' || event.key === 'U') {
+                // Keyboard shortcut for Upgrade button
+                if (
+                    this.uiManager &&
+                    this.uiManager.upgradeButton &&
+                    typeof this.uiManager.handleUpgradeButtonClick === 'function'
+                ) {
+                    // Use the same pattern as updateUpgradeButtonText() - find by custom type property
+                    const button = this.uiManager.upgradeButton.list.find(child => child.type === 'upgradeTower');
+                    if (button && button.input && button.input.enabled) {
+                        this.uiManager.handleUpgradeButtonClick(button);
+                    }
+                }
             }
         });
 
