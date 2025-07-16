@@ -42,3 +42,7 @@ Defend against waves of enemies by strategically placing and upgrading towers. D
 - Wave-based progression with increasing difficulty
 - Tower upgrade system
 - Visual effects and animations 
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE). 
