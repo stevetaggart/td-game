@@ -23,7 +23,7 @@ class UIManager {
         this.playPauseButton = null;
         this.speedButton = null;
         this.playPauseState = 'play'; // 'play' or 'pause'
-        this.speedState = 1; // 1 or 2
+        this.speedState = 1; // 1-9 for speed multipliers
         
         // UI text elements
         this.healthText = null;
@@ -503,7 +503,7 @@ class UIManager {
         this.speedButton = this.scene.add.rectangle(startX + btnWidth + spacing, y, btnWidth, btnHeight, GameConfig.COLORS.BUTTON_BLUE)
             .setOrigin(0, 0)
             .setInteractive();
-        this.speedText = this.scene.add.text(startX + btnWidth + spacing + btnWidth / 2, groupHeight / 2, '2x', {
+        this.speedText = this.scene.add.text(startX + btnWidth + spacing + btnWidth / 2, groupHeight / 2, '1x', {
             fontSize: GameConfig.UI.textFontSize,
             fill: '#fff',
             fontFamily: 'Arial',
@@ -530,18 +530,17 @@ class UIManager {
             }
         });
 
-        // 2x Speed logic
+        // Speed cycling logic (1x -> 2x -> 3x -> 4x -> back to 1x)
         this.speedButton.on('pointerup', () => {
             if (this.scene.gameOver) return;
-            if (this.speedState === 1) {
-                this.scene.setGameSpeed(2);
-                this.speedState = 2;
-                this.speedText.setText('1x');
-            } else {
-                this.scene.setGameSpeed(1);
-                this.speedState = 1;
-                this.speedText.setText('2x');
+            // Cycle through speeds 1, 2, 3, 4, then back to 1
+            let nextSpeed = this.speedState + 1;
+            if (nextSpeed > 4) {
+                nextSpeed = 1;
             }
+            this.scene.setGameSpeed(nextSpeed);
+            this.speedState = nextSpeed;
+            this.speedText.setText(`${nextSpeed}x`);
         });
     }
 
@@ -557,7 +556,7 @@ class UIManager {
             this.playPauseState = 'play';
             this.playPauseText.setText('⏸');
             this.speedState = 1;
-            this.speedText.setText('2x');
+            this.speedText.setText('1x');
         }
     }
 

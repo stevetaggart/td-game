@@ -245,12 +245,31 @@ class TowerDefenseGame extends Phaser.Scene {
                         }
                     }
                 }
-            } else if ((event.key === '1' || event.key === '2') && this.waveActive) {
-                const speed = parseInt(event.key, 10);
-                this.setGameSpeed(speed);
-                if (this.uiManager && this.uiManager.speedText) {
-                    this.uiManager.speedState = speed;
-                    this.uiManager.speedText.setText(speed === 1 ? '2x' : '1x');
+            } else if (event.key >= '0' && event.key <= '9' && this.waveActive) {
+                const keyNum = parseInt(event.key, 10);
+                if (keyNum === 0) {
+                    // 0 key pauses/unpauses the game
+                    if (this._isPaused) {
+                        this.resumeGame();
+                        if (this.uiManager && this.uiManager.playPauseText) {
+                            this.uiManager.playPauseState = 'play';
+                            this.uiManager.playPauseText.setText('⏸');
+                        }
+                    } else {
+                        this.pauseGame();
+                        if (this.uiManager && this.uiManager.playPauseText) {
+                            this.uiManager.playPauseState = 'pause';
+                            this.uiManager.playPauseText.setText('▶️');
+                        }
+                    }
+                } else {
+                    // Keys 1-9 set speed multipliers
+                    const speed = keyNum;
+                    this.setGameSpeed(speed);
+                    if (this.uiManager && this.uiManager.speedText) {
+                        this.uiManager.speedState = speed;
+                        this.uiManager.speedText.setText(`${speed}x`);
+                    }
                 }
             } else if (['b','r','c','m','B','R','C','M'].includes(event.key)) {
                 // Keyboard shortcuts for tower buttons: b=basic, r=rapid, c=cannon, m=multishot
