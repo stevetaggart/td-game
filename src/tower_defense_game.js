@@ -390,6 +390,9 @@ class TowerDefenseGame extends Phaser.Scene {
         // Clear ghost tower
         this.towerPlacementManager.hideGhostTower();
 
+        // Resume game (unpause physics, timers, etc.)
+        this.resumeGame();
+
         // Hide game over screen and update UI
         this.uiManager.hideGameOver();
         this.uiManager.updateUI();
