@@ -376,19 +376,32 @@ class TowerDefenseGame extends Phaser.Scene {
         this.waveManager.reset();
         this.towerPlacementManager.clearSelection();
 
-        // Clear all game objects
-        this.towers.children.entries.forEach(tower => {
-            tower.destroy();
-        });
-        this.enemies.children.entries.forEach(enemy => {
-            enemy.destroy();
-        });
-        this.bullets.children.entries.forEach(bullet => {
-            bullet.destroy();
-        });
+        // Clear all game objects robustly
+        while (this.towers.getLength() > 0) {
+            const tower = this.towers.getFirstAlive();
+            if (tower) tower.destroy();
+            else break;
+        }
+        while (this.enemies.getLength() > 0) {
+            const enemy = this.enemies.getFirstAlive();
+            if (enemy) enemy.destroy();
+            else break;
+        }
+        while (this.bullets.getLength() > 0) {
+            const bullet = this.bullets.getFirstAlive();
+            if (bullet) bullet.destroy();
+            else break;
+        }
+        // As a fallback, clear the groups
+        if (this.towers.clear) this.towers.clear(true, true);
+        if (this.enemies.clear) this.enemies.clear(true, true);
+        if (this.bullets.clear) this.bullets.clear(true, true);
 
         // Clear ghost tower
         this.towerPlacementManager.hideGhostTower();
+
+        // Ensure wave is not active so Start Wave button is shown
+        this.waveActive = false;
 
         // Resume game (unpause physics, timers, etc.)
         this.resumeGame();
@@ -397,6 +410,9 @@ class TowerDefenseGame extends Phaser.Scene {
         this.uiManager.hideGameOver();
         this.uiManager.updateUI();
         this.uiManager.updateAllButtonStates();
+        if (this.uiManager && this.uiManager.updateWaveControlButtons) {
+            this.uiManager.updateWaveControlButtons();
+        }
     }
     update(time, delta) {
         if (this.gameStateManager.gameOver) return;
