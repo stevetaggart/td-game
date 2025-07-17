@@ -25,6 +25,10 @@ class UIManager {
         this.playPauseState = 'play'; // 'play' or 'pause'
         this.speedState = 1; // 1-9 for speed multipliers
         
+        // Auto-start wave functionality
+        this.autoStartToggleButton = null;
+        this.autoStartEnabled = this.getAutoStartPreference();
+        
         // UI text elements
         this.healthText = null;
         this.moneyText = null;
@@ -66,6 +70,24 @@ class UIManager {
         const expiryDate = new Date();
         expiryDate.setFullYear(expiryDate.getFullYear() + 1);
         document.cookie = `td_sound_enabled=${enabled}; expires=${expiryDate.toUTCString()}; path=/`;
+    }
+
+    getAutoStartPreference() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'td_auto_start_enabled') {
+                return value === 'true';
+            }
+        }
+        return false; // Default to auto-start disabled
+    }
+
+    setAutoStartPreference(enabled) {
+        // Set cookie to expire in 1 year
+        const expiryDate = new Date();
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        document.cookie = `td_auto_start_enabled=${enabled}; expires=${expiryDate.toUTCString()}; path=/`;
     }
 
     // Getter for current sound state
@@ -142,7 +164,8 @@ class UIManager {
             fill: GameConfig.COLORS.ENEMIES_TEXT
         }).setOrigin(0, 0);
         
-        // Create sound toggle button on the right side
+        // Create auto-start toggle button and sound toggle button on the right side
+        this.createAutoStartToggleButton();
         this.createSoundToggleButton();
     }
 
@@ -1061,6 +1084,90 @@ class UIManager {
         this.enemyTooltipContainer.y = Math.max(8, Math.min(y + 16, maxY));
     }
 
+    createAutoStartToggleButton() {
+        const rightMargin = 24; // Distance from right edge of game area
+        const buttonSize = 48; // Match tower button height for consistent spacing
+        const spacing = 8; // Space between auto-start and sound buttons
+        const buttonX = GameConfig.GAME_WIDTH - rightMargin - buttonSize - spacing - buttonSize / 2; // Position to the left of sound button
+        const buttonY = GameConfig.UI_TOP_HEIGHT / 2; // Center vertically within the stats panel
+        
+        // Create button container
+        const buttonContainer = this.scene.add.container(buttonX, buttonY);
+        
+        // Create button background
+        const button = this.scene.add.rectangle(0, 0, buttonSize, buttonSize, 
+            this.autoStartEnabled ? GameConfig.COLORS.BUTTON_GREEN : GameConfig.COLORS.BUTTON_DISABLED)
+            .setOrigin(0.5, 0.5)
+            .setInteractive();
+
+        // Add button shadow
+        const shadow = this.scene.add.rectangle(1, 1, buttonSize, buttonSize, 
+            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0.5, 0.5);
+
+        // Create auto-start icon using SVG image
+        const iconSize = 32;
+        const autoStartIcon = this.scene.add.image(0, 0, 'autoStart')
+            .setDisplaySize(iconSize, iconSize)
+            .setOrigin(0.5, 0.5);
+
+        // Add all elements to container
+        buttonContainer.add([shadow, button, autoStartIcon]);
+
+        // Store references
+        button.autoStartIcon = autoStartIcon;
+        button.autoStartEnabled = this.autoStartEnabled;
+
+        // Set initial state
+        this.updateAutoStartToggleState(button);
+
+        // Add hover effect with tooltip
+        button.on('pointerover', (pointer) => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 100,
+                ease: 'Power2'
+            });
+            // Show tooltip
+            const tooltipText = this.autoStartEnabled ? 
+                'Auto-Start: ON\nNext wave starts automatically' : 
+                'Auto-Start: OFF\nClick to enable auto-start';
+            this.showTooltip(pointer.worldX, pointer.worldY, tooltipText);
+        });
+
+        button.on('pointerout', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: 'Power2'
+            });
+            // Hide tooltip
+            this.hideTooltip();
+        });
+
+        // Add click effect
+        button.on('pointerdown', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 50,
+                yoyo: true,
+                ease: 'Power2'
+            });
+        });
+
+        button.on('pointerup', () => {
+            this.toggleAutoStart(button);
+        });
+
+        this.autoStartToggleButton = button;
+    }
+
     createSoundToggleButton() {
         const rightMargin = 24; // Distance from right edge of game area
         const buttonSize = 48; // Match tower button height for consistent spacing
@@ -1168,6 +1275,35 @@ class UIManager {
         } else {
             this.scene.sound.setMute(true);
         }
+    }
+
+    updateAutoStartToggleState(button) {
+        if (button.autoStartEnabled) {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_GREEN);
+            button.autoStartIcon.setAlpha(1.0);
+        } else {
+            button.setFillStyle(GameConfig.COLORS.BUTTON_DISABLED);
+            button.autoStartIcon.setAlpha(0.6);
+        }
+    }
+
+    toggleAutoStart(button) {
+        button.autoStartEnabled = !button.autoStartEnabled;
+        this.autoStartEnabled = button.autoStartEnabled;
+        this.updateAutoStartToggleState(button);
+        
+        // Save preference to cookie
+        this.setAutoStartPreference(this.autoStartEnabled);
+        
+        // Update tooltip if currently visible
+        if (this.tooltipContainer && this.tooltipContainer.visible) {
+            this.hideTooltip();
+        }
+    }
+
+    // Getter for current auto-start state
+    getAutoStartState() {
+        return this.autoStartEnabled;
     }
 }
 

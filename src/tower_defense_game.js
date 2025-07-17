@@ -84,6 +84,7 @@ class TowerDefenseGame extends Phaser.Scene {
         // Load UI icons
         this.load.image('speakerOn', GameConfig.ASSETS.speakerOn);
         this.load.image('speakerOff', GameConfig.ASSETS.speakerOff);
+        this.load.image('autoStart', GameConfig.ASSETS.autoStart);
         
         this.createGhostTowerSprites();
         this.createPlacementIndicators();
@@ -488,6 +489,16 @@ class TowerDefenseGame extends Phaser.Scene {
         // Do not reset game speed here; keep the current multiplier
         if (this.uiManager && this.uiManager.updateWaveControlButtons) {
             this.uiManager.updateWaveControlButtons();
+        }
+        
+        // Auto-start next wave if enabled and game is not over
+        if (this.uiManager && this.uiManager.getAutoStartState() && !this.gameOver) {
+            // Add a brief delay before auto-starting the next wave
+            this.time.delayedCall(1500, () => {
+                if (!this.gameOver && !this.waveManager.waveActive) {
+                    this.startWave();
+                }
+            });
         }
     }
 

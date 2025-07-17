@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Classic bold lightning bolt -->
+  <path d="M18 2 L7 18 H15 L12 30 L25 12 H17 L20 2 Z"
+    fill="#fff" stroke="#222" stroke-width="2" stroke-linejoin="round"/>
+</svg>
