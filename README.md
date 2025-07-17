@@ -7,17 +7,22 @@ A browser-based tower defense game built with Phaser.js.
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd td_game
+   cd td-game
    ```
 
-2. **Start the server in a terminal:**
+2. **Install dependencies:**
    ```bash
-   python3 -m http.server 8000
+   npm install
    ```
 
-3. **Open the game:**
-   - Open your browser and navigate to `http://localhost:8000`
-   - Click on `tower_defense_game.html`
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open the game:**
+   - Open your browser and navigate to `http://localhost:5173` (or the URL shown in your terminal)
+   - The game will load automatically from the root page
 
 ## Game Controls
 
@@ -35,12 +40,7 @@ A browser-based tower defense game built with Phaser.js.
 - **R:** Select Rapid Fire Tower  
 - **C:** Select Cannon Tower
 - **M:** Select Multishot Tower
-
-## Tower Types
-
-- **Basic Tower ($20):** Balanced damage and range
-- **Rapid Fire ($40):** Fast firing, lower damage
-- **Cannon ($60):** High damage, slow firing, long range
+- **U:** Upgrade Tower
 
 ## Objective
 
