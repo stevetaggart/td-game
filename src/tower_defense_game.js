@@ -466,8 +466,7 @@ class TowerDefenseGame extends Phaser.Scene {
 
     endWave() {
         this.waveManager.endWave();
-        // Reset game speed to 1x at the end of each round
-        this.setGameSpeed(1);
+        // Do not reset game speed here; keep the current multiplier
         if (this.uiManager && this.uiManager.updateWaveControlButtons) {
             this.uiManager.updateWaveControlButtons();
         }

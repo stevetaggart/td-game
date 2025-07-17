@@ -552,11 +552,14 @@ class UIManager {
         } else {
             this.startWaveButton.parentContainer && this.startWaveButton.parentContainer.setVisible(true);
             this.waveControlContainer.setVisible(false);
-            // Reset play/pause and speed button states
+            // Reset play/pause state only
             this.playPauseState = 'play';
             this.playPauseText.setText('⏸');
-            this.speedState = 1;
-            this.speedText.setText('1x');
+            // Keep speedState and speedText in sync with the current game speed
+            if (this.scene._gameSpeed) {
+                this.speedState = this.scene._gameSpeed;
+                this.speedText.setText(`${this.scene._gameSpeed}x`);
+            }
         }
     }
 
