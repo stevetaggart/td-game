@@ -4,7 +4,10 @@ const DefaultMap = {
     description: 'The original tower defense map',
     pathImage: '/assets/maps/enemy_path_no_bg.svg',
     
-    // Path coordinates for enemy movement
+    // SVG path data for smooth enemy movement 
+    svgPathData: 'M 0 400 L 200 400 L 200 200 L 400 200 L 400 500 L 600 500 L 600 300 L 800 300 L 800 400 L 1000 400 L 1000 200 L 1200 200',
+    
+    // Fallback path coordinates for compatibility
     path: [
         { x: 0, y: 400 },
         { x: 200, y: 400 },

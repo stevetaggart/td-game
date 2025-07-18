@@ -4,7 +4,10 @@ const SpiralMap = {
     description: 'A winding path with alternating high and low sections',
     pathImage: '/assets/maps/spiral-map.svg',
     
-    // Path coordinates for enemy movement (matching the SVG path)
+    // SVG path data for smooth enemy movement
+    svgPathData: 'M 0 400 L 200 400 L 200 200 L 400 200 L 400 600 L 600 600 L 600 150 L 800 150 L 800 650 L 1000 650 L 1000 300 L 1200 300',
+    
+    // Fallback path coordinates for compatibility
     path: [
         { x: 0, y: 400 },
         { x: 200, y: 400 },

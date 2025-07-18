@@ -3,7 +3,7 @@ import GameConfig from './game-config.js';
 import DefaultMap from './maps/default-map.js';
 import { PathManager, GameStateManager, WaveManager, TowerPlacementManager } from './game-systems.js';
 import EffectsManager from './effects-manager.js';
-
+import SpiralMap from './maps/spiral-map.js';
 class TowerDefenseGame extends Phaser.Scene {
     // Pause/resume and speed control for UIManager
     pauseGame() {
@@ -191,12 +191,20 @@ class TowerDefenseGame extends Phaser.Scene {
     loadMapConfiguration() {
         // Load the map configuration
         // In the future, this could be made dynamic to support map selection
-        this.currentMapConfig = DefaultMap;
+        this.currentMapConfig = SpiralMap;
     }
 
-    create() {
+    async create() {
         // Initialize game systems
         this.pathManager = new PathManager(this.currentMapConfig);
+        
+        // Wait for smooth path initialization if SVG data is available
+        if (this.currentMapConfig.svgPathData) {
+            console.log('Initializing smooth path for:', this.currentMapConfig.name);
+            console.log('SVG path data:', this.currentMapConfig.svgPathData);
+            await this.pathManager.initializeSmoothPath();
+        }
+        
         this.gameStateManager = new GameStateManager(this);
         this.waveManager = new WaveManager(this);
         this.towerPlacementManager = new TowerPlacementManager(this, this.pathManager);
