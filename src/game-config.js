@@ -6,9 +6,10 @@ const GameConfig = {
     GAME_WIDTH: 1200,
     GAME_HEIGHT: 800,
     UI_TOP_HEIGHT: 80,
-    UI_BOTTOM_HEIGHT: 80,
+    UI_RIGHT_WIDTH: 250,
     GAME_AREA_TOP: 80,
-    GAME_AREA_BOTTOM: 720,
+    GAME_AREA_RIGHT: 950,
+    GAME_AREA_BOTTOM: 800,
     
     // Colors
     COLORS: {
