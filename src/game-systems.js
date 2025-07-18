@@ -322,8 +322,8 @@ class TowerPlacementManager {
         const x = pointer.x;
         const y = pointer.y;
 
-        // Check if cursor is over either UI bar
-        if (y < GameConfig.GAME_AREA_TOP || y >= GameConfig.GAME_AREA_BOTTOM) {
+        // Check if cursor is over any UI area
+        if (y < GameConfig.GAME_AREA_TOP || y >= GameConfig.GAME_AREA_BOTTOM || x >= GameConfig.GAME_AREA_RIGHT) {
             this.hideGhostTower();
             return;
         }
@@ -385,8 +385,8 @@ class TowerPlacementManager {
         const x = pointer.x;
         const y = pointer.y;
 
-        // Don't allow tower placement if clicking in either UI bar
-        if (y < GameConfig.GAME_AREA_TOP || y >= GameConfig.GAME_AREA_BOTTOM) {
+        // Don't allow tower placement if clicking in any UI area
+        if (y < GameConfig.GAME_AREA_TOP || y >= GameConfig.GAME_AREA_BOTTOM || x >= GameConfig.GAME_AREA_RIGHT) {
             return;
         }
 

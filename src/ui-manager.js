@@ -138,41 +138,41 @@ class UIManager {
     }
 
     createStatsPanel() {
-        // Create stats panel as a horizontal bar at the top
-        const statsPanel = this.scene.add.rectangle(0, 0, GameConfig.GAME_WIDTH, GameConfig.UI_TOP_HEIGHT, 
+        // Create stats panel as a horizontal bar at the top (covering only the game area width)
+        const statsPanel = this.scene.add.rectangle(0, 0, GameConfig.GAME_AREA_RIGHT, GameConfig.UI_TOP_HEIGHT, 
             GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
             .setOrigin(0, 0);
         
-        // Stats text - arranged horizontally with larger font
-        this.healthText = this.scene.add.text(40, 25, `❤️${this.scene.health}`, {
+        // Stats text - condensed with smaller spacing
+        this.healthText = this.scene.add.text(20, 25, `❤️${this.scene.health}`, {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.HEALTH_TEXT
         }).setOrigin(0, 0);
 
-        this.moneyText = this.scene.add.text(160, 25, `💰${this.scene.money}`, {
+        this.moneyText = this.scene.add.text(120, 25, `💰${this.scene.money}`, {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.MONEY_TEXT
         }).setOrigin(0, 0);
 
-        this.waveText = this.scene.add.text(560, 25, `Wave: ${this.scene.wave}`, {
+        this.waveText = this.scene.add.text(220, 25, `Wave: ${this.scene.wave}`, {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.WAVE_TEXT
         }).setOrigin(0, 0);
 
-        this.enemiesText = this.scene.add.text(820, 25, `Enemies: ${this.scene.enemiesInWave - this.scene.enemiesSpawned}` , {
+        this.enemiesText = this.scene.add.text(330, 25, `Enemies: ${this.scene.enemiesInWave - this.scene.enemiesSpawned}` , {
             fontSize: GameConfig.UI.textFontSize,
             fill: GameConfig.COLORS.ENEMIES_TEXT
         }).setOrigin(0, 0);
         
-        // Create auto-start toggle button and sound toggle button on the right side
+        // Create auto-start toggle button and sound toggle button on the right side of the condensed bar
         this.createAutoStartToggleButton();
         this.createSoundToggleButton();
     }
 
     createButtonPanel() {
-        // Create bottom button panel background
-        const buttonPanel = this.scene.add.rectangle(0, GameConfig.GAME_AREA_BOTTOM, GameConfig.GAME_WIDTH, 
-            GameConfig.UI_BOTTOM_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
+        // Create right button panel background
+        const buttonPanel = this.scene.add.rectangle(GameConfig.GAME_AREA_RIGHT, 0, GameConfig.UI_RIGHT_WIDTH, 
+            GameConfig.GAME_HEIGHT, GameConfig.COLORS.UI_PANEL, GameConfig.COLORS.UI_PANEL_ALPHA)
             .setOrigin(0, 0);
 
         // --- Tower Button Group ---
@@ -182,22 +182,23 @@ class UIManager {
         // --- Wave Control Group ---
         this.createWaveControlGroup();
 
-        // Arrange groups horizontally
-        // Tower group on left, upgrade group positioned relative to wave control group on right
-        const leftMargin = 24;
-        const rightMargin = 24;
-        const spacing = 16;
-        const buttonY = GameConfig.GAME_AREA_BOTTOM + (GameConfig.UI_BOTTOM_HEIGHT - (this._towerButtonHeight || 48)) / 2;
-        this.towerButtonGroup.x = leftMargin;
-        this.towerButtonGroup.y = buttonY;
+        // Arrange groups vertically in the right panel
+        const topMargin = 100; // Leave space below the top UI
+        const spacing = 20;
+        const buttonX = GameConfig.GAME_AREA_RIGHT + 10; // 10px margin from left edge of right panel
         
-        // Position wave control group on the right
-        this.waveControlGroup.x = GameConfig.GAME_WIDTH - this.waveControlGroup.width - rightMargin;
-        this.waveControlGroup.y = buttonY;
+        // Position tower group at the top
+        this.towerButtonGroup.x = buttonX;
+        this.towerButtonGroup.y = topMargin;
         
-        // Position upgrade button group so its right edge is one button width to the left of the Start Wave button
-        this.upgradeButtonGroup.x = this.waveControlGroup.x - this.upgradeButtonGroup.width - spacing;
-        this.upgradeButtonGroup.y = buttonY;
+        // Position upgrade group below tower group
+        this.upgradeButtonGroup.x = buttonX;
+        this.upgradeButtonGroup.y = topMargin + this.towerButtonGroup.height + spacing;
+        
+        // Position wave control group below upgrade group
+        this.waveControlGroup.x = buttonX;
+        this.waveControlGroup.y = topMargin + this.towerButtonGroup.height + this.upgradeButtonGroup.height + spacing * 2;
+        
         // Ensure correct button is visible on game start
         this.updateWaveControlButtons();
     }
@@ -205,11 +206,11 @@ class UIManager {
     createTowerButtonGroup() {
         this.towerButtonGroup = this.scene.add.container(0, 0);
         this.towerButtons = [];
-        const buttonWidth = 110;
+        const buttonWidth = 220; // Wider buttons for right panel
         const buttonHeight = 48;
-        const spacing = 16;
+        const spacing = 8; // Smaller vertical spacing
         TOWER_TYPES.forEach((tower, i) => {
-            const btn = this.createTowerButton((buttonWidth + spacing) * i, 0, tower.label, tower.type, tower.cost, buttonWidth, buttonHeight);
+            const btn = this.createTowerButton(0, (buttonHeight + spacing) * i, tower.label, tower.type, tower.cost, buttonWidth, buttonHeight);
             this.towerButtonGroup.add(btn);
             this.towerButtons.push(btn);
         });
@@ -217,8 +218,8 @@ class UIManager {
         this._towerButtonWidth = buttonWidth;
         this._towerButtonHeight = buttonHeight;
         this._towerButtonSpacing = spacing;
-        this.towerButtonGroup.width = TOWER_TYPES.length * buttonWidth + (TOWER_TYPES.length - 1) * spacing;
-        this.towerButtonGroup.height = buttonHeight;
+        this.towerButtonGroup.width = buttonWidth;
+        this.towerButtonGroup.height = TOWER_TYPES.length * buttonHeight + (TOWER_TYPES.length - 1) * spacing;
     }
 
     createUpgradeButtonGroup() {
@@ -226,19 +227,19 @@ class UIManager {
         
         // Calculate button spacing and positions
         const buttonSpacing = 8;
-        const totalWidth = this._towerButtonWidth * 2 + buttonSpacing;
+        const buttonWidth = this._towerButtonWidth; // Use same width as tower buttons
         
-        // Place upgrade button on the left
-        this.upgradeButton = this.createUpgradeButtonElement(0, 0, 'Upgrade ($30)', 30, this._towerButtonWidth, this._towerButtonHeight);
+        // Place upgrade button on top
+        this.upgradeButton = this.createUpgradeButtonElement(0, 0, 'Upgrade ($30)', 30, buttonWidth, this._towerButtonHeight);
         this.upgradeButtonGroup.add(this.upgradeButton);
         
-        // Place sell button on the right
-        this.sellButton = this.createSellButtonElement(this._towerButtonWidth + buttonSpacing, 0, 'Sell', 0, this._towerButtonWidth, this._towerButtonHeight);
+        // Place sell button below
+        this.sellButton = this.createSellButtonElement(0, this._towerButtonHeight + buttonSpacing, 'Sell', 0, buttonWidth, this._towerButtonHeight);
         this.upgradeButtonGroup.add(this.sellButton);
         
-        // Update group dimensions to accommodate both buttons
-        this.upgradeButtonGroup.width = totalWidth;
-        this.upgradeButtonGroup.height = this._towerButtonHeight;
+        // Update group dimensions to accommodate both buttons vertically
+        this.upgradeButtonGroup.width = buttonWidth;
+        this.upgradeButtonGroup.height = this._towerButtonHeight * 2 + buttonSpacing;
     }
 
     createWaveControlGroup() {
@@ -259,8 +260,8 @@ class UIManager {
         // Add both to group, but only one is visible at a time
         this.waveControlGroup.add(this.startWaveButton.parentContainer);
         this.waveControlGroup.add(this.waveControlContainer);
-        // Both containers now have the same width (Start Wave button width)
-        this.waveControlGroup.width = GameConfig.UI.startWaveButtonWidth;
+        // Use the same width as tower buttons for consistency
+        this.waveControlGroup.width = this._towerButtonWidth;
         this.waveControlGroup.height = this._towerButtonHeight || 48;
     }
 
@@ -409,26 +410,30 @@ class UIManager {
     createStartWaveButton() {
         // Create start wave button container at (0,0) for proper group positioning
         const startWaveContainer = this.scene.add.container(0, 0);
+        
+        // Use tower button width for consistency
+        const buttonWidth = this._towerButtonWidth || 220;
+        const buttonHeight = this._towerButtonHeight || 48;
 
         // Add button shadow (top-left origin)
-        const startWaveShadow = this.scene.add.rectangle(2, 2, GameConfig.UI.startWaveButtonWidth - 20, 
-            GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+        const startWaveShadow = this.scene.add.rectangle(2, 2, buttonWidth - 4, 
+            buttonHeight, GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
             .setOrigin(0, 0);
 
         // Create start wave button with adjusted position (top-left origin)
-        this.startWaveButton = this.scene.add.rectangle(0, 0, GameConfig.UI.startWaveButtonWidth, 
-            GameConfig.UI.startWaveButtonHeight, GameConfig.COLORS.BUTTON_GREEN)
+        this.startWaveButton = this.scene.add.rectangle(0, 0, buttonWidth, 
+            buttonHeight, GameConfig.COLORS.BUTTON_GREEN)
             .setOrigin(0, 0)
             .setInteractive();
 
         // Add glow effect (top-left origin)
-        const startWaveGlow = this.scene.add.rectangle(0, 0, GameConfig.UI.startWaveButtonWidth - 16, 
-            GameConfig.UI.startWaveButtonHeight + 4, GameConfig.COLORS.BUTTON_GREEN, 0.2)
+        const startWaveGlow = this.scene.add.rectangle(0, 0, buttonWidth, 
+            buttonHeight + 4, GameConfig.COLORS.BUTTON_GREEN, 0.2)
             .setOrigin(0, 0)
             .setVisible(false);
 
         // Add text centered within the button
-        const startWaveText = this.scene.add.text(GameConfig.UI.startWaveButtonWidth / 2, GameConfig.UI.startWaveButtonHeight / 2, 'Start Wave', {
+        const startWaveText = this.scene.add.text(buttonWidth / 2, buttonHeight / 2, 'Start Wave', {
             fontSize: GameConfig.UI.textFontSize,
             fill: '#fff',
             fontFamily: 'Arial',
@@ -499,16 +504,15 @@ class UIManager {
         this.waveControlContainer = this.scene.add.container(0, 0);
         this.waveControlContainer.setVisible(false);
 
-        // Match Start Wave button size
-        const groupWidth = GameConfig.UI.startWaveButtonWidth;
-        const groupHeight = GameConfig.UI.startWaveButtonHeight;
+        // Use tower button dimensions for consistency
+        const groupWidth = this._towerButtonWidth || 220;
+        const groupHeight = this._towerButtonHeight || 48;
 
         // Calculate button positions to center them in the group
-        const btnWidth = 60;
+        const btnWidth = (groupWidth - 8) / 2; // Two buttons with spacing
         const btnHeight = groupHeight;
         const spacing = 8;
-        const totalBtnWidth = btnWidth * 2 + spacing;
-        const startX = (groupWidth - totalBtnWidth) / 2;
+        const startX = 0;
         const y = 0;
 
         // Play/Pause button
@@ -1085,10 +1089,10 @@ class UIManager {
     }
 
     createAutoStartToggleButton() {
-        const rightMargin = 24; // Distance from right edge of game area
+        const rightMargin = 24; // Distance from right edge of condensed game area
         const buttonSize = 48; // Match tower button height for consistent spacing
         const spacing = 8; // Space between auto-start and sound buttons
-        const buttonX = GameConfig.GAME_WIDTH - rightMargin - buttonSize - spacing - buttonSize / 2; // Position to the left of sound button
+        const buttonX = GameConfig.GAME_AREA_RIGHT - rightMargin - buttonSize - spacing - buttonSize / 2; // Position to the left of sound button
         const buttonY = GameConfig.UI_TOP_HEIGHT / 2; // Center vertically within the stats panel
         
         // Create button container
@@ -1169,9 +1173,9 @@ class UIManager {
     }
 
     createSoundToggleButton() {
-        const rightMargin = 24; // Distance from right edge of game area
+        const rightMargin = 24; // Distance from right edge of condensed game area
         const buttonSize = 48; // Match tower button height for consistent spacing
-        const buttonX = GameConfig.GAME_WIDTH - rightMargin - buttonSize / 2; // Position with right margin
+        const buttonX = GameConfig.GAME_AREA_RIGHT - rightMargin - buttonSize / 2; // Position with right margin
         const buttonY = GameConfig.UI_TOP_HEIGHT / 2; // Center vertically within the stats panel
         
         // Create button container

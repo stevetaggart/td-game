@@ -4,20 +4,20 @@ const SpiralMap = {
     description: 'A winding path with alternating high and low sections',
     pathImage: '/assets/maps/spiral-map.svg',
     
-    // Path coordinates for enemy movement (matching the SVG path)
+    // Path coordinates for enemy movement (adjusted for narrower game area)
     path: [
         { x: 0, y: 400 },
-        { x: 200, y: 400 },
-        { x: 200, y: 200 },
-        { x: 400, y: 200 },
-        { x: 400, y: 600 },
-        { x: 600, y: 600 },
-        { x: 600, y: 150 },
-        { x: 800, y: 150 },
-        { x: 800, y: 650 },
-        { x: 1000, y: 650 },
-        { x: 1000, y: 300 },
-        { x: 1200, y: 300 }
+        { x: 180, y: 400 },
+        { x: 180, y: 200 },
+        { x: 350, y: 200 },
+        { x: 350, y: 600 },
+        { x: 520, y: 600 },
+        { x: 520, y: 150 },
+        { x: 690, y: 150 },
+        { x: 690, y: 650 },
+        { x: 860, y: 650 },
+        { x: 860, y: 300 },
+        { x: 950, y: 300 }
     ],
     
     // Map-specific settings
