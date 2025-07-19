@@ -1322,14 +1322,14 @@ class UIManager {
         // Create button container
         const buttonContainer = this.scene.add.container(buttonX, buttonY);
         
-        // Create button background
-        const button = this.scene.add.rectangle(0, 0, buttonSize, buttonSize, 
+        // Create circular button background
+        const button = this.scene.add.circle(0, 0, buttonSize / 2, 
             GameConfig.COLORS.BUTTON_BLUE)
             .setOrigin(0.5, 0.5)
             .setInteractive();
 
-        // Add button shadow
-        const shadow = this.scene.add.rectangle(1, 1, buttonSize, buttonSize, 
+        // Add circular button shadow
+        const shadow = this.scene.add.circle(1, 1, buttonSize / 2, 
             GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
             .setOrigin(0.5, 0.5);
 
