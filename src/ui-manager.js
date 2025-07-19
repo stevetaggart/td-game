@@ -1388,8 +1388,8 @@ class UIManager {
         }
 
         // Create dialog background
-        const dialogWidth = 400;
-        const dialogHeight = 300;
+        const dialogWidth = 450;
+        const dialogHeight = 350;
         const centerX = GameConfig.GAME_WIDTH / 2;
         const centerY = GameConfig.GAME_HEIGHT / 2;
 
@@ -1413,7 +1413,7 @@ class UIManager {
             .setStrokeStyle(2, GameConfig.COLORS.BUTTON_BLUE);
 
         // Title
-        const title = this.scene.add.text(0, -dialogHeight/2 + 30, 'Help', {
+        const title = this.scene.add.text(0, -dialogHeight/2 + 35, 'Help', {
             fontSize: '24px',
             fill: '#ffffff',
             fontFamily: 'Arial'
@@ -1435,7 +1435,7 @@ U: Upgrade selected tower
 Click towers to select/upgrade
 Place towers to defend against enemies`;
 
-        const content = this.scene.add.text(0, 10, helpText, {
+        const content = this.scene.add.text(0, 25, helpText, {
             fontSize: '14px',
             fill: '#ffffff',
             fontFamily: 'Arial',
