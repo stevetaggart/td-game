@@ -248,7 +248,8 @@ const GameConfig = {
         cannonBall: '/assets/bullet_cannon.svg',
         speakerOn: '/assets/speaker-on.svg',
         speakerOff: '/assets/speaker-off.svg',
-        autoStart: '/assets/auto-start.svg'
+        autoStart: '/assets/auto-start.svg',
+        help: '/assets/help.svg'
     },
     
     // Effect settings
