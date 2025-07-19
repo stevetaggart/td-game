@@ -85,6 +85,7 @@ class TowerDefenseGame extends Phaser.Scene {
         this.load.image('speakerOn', GameConfig.ASSETS.speakerOn);
         this.load.image('speakerOff', GameConfig.ASSETS.speakerOff);
         this.load.image('autoStart', GameConfig.ASSETS.autoStart);
+        this.load.image('help', GameConfig.ASSETS.help);
         
         this.createGhostTowerSprites();
         this.createPlacementIndicators();
@@ -312,6 +313,11 @@ class TowerDefenseGame extends Phaser.Scene {
                     if (button && button.input && button.input.enabled) {
                         this.uiManager.handleUpgradeButtonClick(button);
                     }
+                }
+            } else if (event.key === 'Escape') {
+                // Close help dialog
+                if (this.uiManager && this.uiManager.helpDialog && this.uiManager.helpDialog.visible) {
+                    this.uiManager.hideHelpDialog();
                 }
             }
         });

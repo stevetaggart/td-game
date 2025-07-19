@@ -39,6 +39,10 @@ class UIManager {
         this.soundToggleButton = null;
         this.soundEnabled = this.getSoundPreference();
         
+        // Help dialog
+        this.helpButton = null;
+        this.helpDialog = null;
+        
         // Game over screen elements
         this.finalWaveText = null;
         this.towersBuiltText = null;
@@ -165,6 +169,7 @@ class UIManager {
         }).setOrigin(0, 0);
         
         // Create auto-start toggle button and sound toggle button on the right side
+        this.createHelpButton();
         this.createAutoStartToggleButton();
         this.createSoundToggleButton();
     }
@@ -1304,6 +1309,182 @@ class UIManager {
     // Getter for current auto-start state
     getAutoStartState() {
         return this.autoStartEnabled;
+    }
+
+    createHelpButton() {
+        const rightMargin = 24;
+        const buttonSize = 48;
+        const spacing = 8;
+        // Position to the left of auto-start button (which is to the left of sound button)
+        const buttonX = GameConfig.GAME_WIDTH - rightMargin - buttonSize - spacing - buttonSize - spacing - buttonSize / 2;
+        const buttonY = GameConfig.UI_TOP_HEIGHT / 2;
+        
+        // Create button container
+        const buttonContainer = this.scene.add.container(buttonX, buttonY);
+        
+        // Create button background
+        const button = this.scene.add.rectangle(0, 0, buttonSize, buttonSize, 
+            GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0.5, 0.5)
+            .setInteractive();
+
+        // Add button shadow
+        const shadow = this.scene.add.rectangle(1, 1, buttonSize, buttonSize, 
+            GameConfig.COLORS.BUTTON_SHADOW, GameConfig.COLORS.BUTTON_SHADOW_ALPHA)
+            .setOrigin(0.5, 0.5);
+
+        // Create help icon
+        const iconSize = 32;
+        const helpIcon = this.scene.add.image(0, 0, 'help')
+            .setDisplaySize(iconSize, iconSize)
+            .setOrigin(0.5, 0.5);
+
+        // Add all elements to container
+        buttonContainer.add([shadow, button, helpIcon]);
+
+        // Add hover effect
+        button.on('pointerover', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 100,
+                ease: 'Power2'
+            });
+        });
+
+        button.on('pointerout', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: 'Power2'
+            });
+        });
+
+        // Add click effect
+        button.on('pointerdown', () => {
+            this.scene.tweens.add({
+                targets: button,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 50,
+                yoyo: true,
+                ease: 'Power2'
+            });
+        });
+
+        button.on('pointerup', () => {
+            this.showHelpDialog();
+        });
+
+        this.helpButton = button;
+    }
+
+    showHelpDialog() {
+        if (this.helpDialog && this.helpDialog.visible) {
+            return; // Dialog already visible
+        }
+
+        // Create dialog background
+        const dialogWidth = 400;
+        const dialogHeight = 300;
+        const centerX = GameConfig.GAME_WIDTH / 2;
+        const centerY = GameConfig.GAME_HEIGHT / 2;
+
+        const dialogContainer = this.scene.add.container(centerX, centerY);
+
+        // Semi-transparent overlay
+        const overlay = this.scene.add.rectangle(0, 0, GameConfig.GAME_WIDTH, GameConfig.GAME_HEIGHT, 
+            0x000000, 0.5)
+            .setOrigin(0.5, 0.5)
+            .setInteractive();
+
+        // Dialog background
+        const dialogBg = this.scene.add.rectangle(0, 0, dialogWidth, dialogHeight, 
+            GameConfig.COLORS.UI_PANEL, 0.95)
+            .setOrigin(0.5, 0.5);
+
+        // Dialog border
+        const dialogBorder = this.scene.add.rectangle(0, 0, dialogWidth, dialogHeight, 
+            GameConfig.COLORS.BUTTON_BLUE)
+            .setOrigin(0.5, 0.5)
+            .setStrokeStyle(2, GameConfig.COLORS.BUTTON_BLUE);
+
+        // Title
+        const title = this.scene.add.text(0, -dialogHeight/2 + 30, 'Help', {
+            fontSize: '24px',
+            fill: '#ffffff',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5, 0.5);
+
+        // Help content
+        const helpText = `Keyboard Shortcuts:
+
+Space: Start wave / Pause game
+0: Pause/unpause during wave
+1-9: Set game speed (1x to 9x)
+
+B: Select Basic Tower
+R: Select Rapid Fire Tower
+C: Select Cannon Tower
+M: Select Multishot Tower
+U: Upgrade selected tower
+
+Click towers to select/upgrade
+Place towers to defend against enemies`;
+
+        const content = this.scene.add.text(0, 10, helpText, {
+            fontSize: '14px',
+            fill: '#ffffff',
+            fontFamily: 'Arial',
+            align: 'left',
+            lineSpacing: 4
+        }).setOrigin(0.5, 0.5);
+
+        // Close button (X)
+        const closeButton = this.scene.add.rectangle(dialogWidth/2 - 20, -dialogHeight/2 + 20, 30, 30, 
+            GameConfig.COLORS.BUTTON_RED)
+            .setOrigin(0.5, 0.5)
+            .setInteractive();
+
+        const closeX = this.scene.add.text(dialogWidth/2 - 20, -dialogHeight/2 + 20, '×', {
+            fontSize: '20px',
+            fill: '#ffffff',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5, 0.5);
+
+        // Add close button hover effect
+        closeButton.on('pointerover', () => {
+            closeButton.setFillStyle(GameConfig.COLORS.BUTTON_RED_HOVER || 0xff6666);
+        });
+
+        closeButton.on('pointerout', () => {
+            closeButton.setFillStyle(GameConfig.COLORS.BUTTON_RED);
+        });
+
+        closeButton.on('pointerup', () => {
+            this.hideHelpDialog();
+        });
+
+        // Add elements to container
+        dialogContainer.add([overlay, dialogBg, dialogBorder, title, content, closeButton, closeX]);
+
+        // Store reference
+        this.helpDialog = dialogContainer;
+
+        // Close dialog when clicking overlay
+        overlay.on('pointerup', () => {
+            this.hideHelpDialog();
+        });
+    }
+
+    hideHelpDialog() {
+        if (this.helpDialog) {
+            this.helpDialog.destroy();
+            this.helpDialog = null;
+        }
     }
 }
 

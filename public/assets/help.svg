@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Circle background -->
+  <circle cx="16" cy="16" r="15" stroke="#4a5568" stroke-width="2" fill="none"/>
+  
+  <!-- Question mark -->
+  <path d="M12 12c0-2.2 1.8-4 4-4s4 1.8 4 4c0 1.5-1 2.5-2 3l-1 1v1" stroke="#4a5568" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Dot -->
+  <circle cx="16" cy="22" r="1" fill="#4a5568"/>
+</svg>
