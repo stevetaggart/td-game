@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import GameConfig from './game-config.js';
+import DefaultMap from './maps/default-map.js';
 import { Tower, Enemy } from './game-entities.js';
 // Simple Event System
 class EventSystem {

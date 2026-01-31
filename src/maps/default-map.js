@@ -1,5 +1,6 @@
 // Default Map Configuration
 const DefaultMap = {
+    id: 'default',
     name: 'Default Map',
     description: 'The original tower defense map',
     pathImage: '/assets/maps/enemy_path_no_bg.svg',

@@ -51,8 +51,9 @@ class TowerDefenseGame extends Phaser.Scene {
             });
         }
     }
-    constructor() {
+    constructor(mapConfig = null) {
         super({ key: 'TowerDefenseGame' });
+        this.mapConfigOverride = mapConfig;
     }
 
     preload() {
@@ -66,7 +67,9 @@ class TowerDefenseGame extends Phaser.Scene {
         this.loadMapConfiguration();
         
         // Load the enemy path SVG based on selected map
-        this.load.image('enemyPath', this.currentMapConfig.pathImage);
+        if (this.currentMapConfig.pathImage) {
+            this.load.image('enemyPath', this.currentMapConfig.pathImage);
+        }
         
         // Load enemy sprites
         this.load.image('enemy', GameConfig.ASSETS.enemy);
@@ -192,7 +195,7 @@ class TowerDefenseGame extends Phaser.Scene {
     loadMapConfiguration() {
         // Load the map configuration
         // In the future, this could be made dynamic to support map selection
-        this.currentMapConfig = DefaultMap;
+        this.currentMapConfig = this.mapConfigOverride || DefaultMap;
     }
 
     create() {
@@ -206,7 +209,11 @@ class TowerDefenseGame extends Phaser.Scene {
         // No longer need this.path; use this.pathManager instead
 
         // Add the enemy path SVG image instead of drawing with graphics
-        this.add.image(GameConfig.GAME_WIDTH / 2, GameConfig.GAME_HEIGHT / 2, 'enemyPath').setOrigin(0.5);
+        if (this.currentMapConfig.pathImage) {
+            this.add.image(GameConfig.GAME_WIDTH / 2, GameConfig.GAME_HEIGHT / 2, 'enemyPath').setOrigin(0.5);
+        } else {
+            this.drawCustomPathOverlay();
+        }
 
         // Create groups
         this.towers = this.add.group();
@@ -544,6 +551,20 @@ class TowerDefenseGame extends Phaser.Scene {
         this.uiManager.updateUI();
     }
 
+    drawCustomPathOverlay() {
+        const graphics = this.add.graphics();
+        graphics.lineStyle(6, 0xffffff, 0.6);
+        const path = this.currentMapConfig.path || [];
+        if (path.length === 0) return;
+        graphics.beginPath();
+        graphics.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) {
+            graphics.lineTo(path[i].x, path[i].y);
+        }
+        graphics.strokePath();
+        graphics.setDepth(-1);
+    }
+
     // Getters for backward compatibility
     get health() { return this.gameStateManager.health; }
     set health(value) { this.gameStateManager.health = value; }
@@ -580,16 +601,19 @@ class TowerDefenseGame extends Phaser.Scene {
 }
 
 // Game Configuration
-const config = {
-    type: Phaser.AUTO,
-    width: GameConfig.GAME_WIDTH,
-    height: GameConfig.GAME_HEIGHT,
-    parent: 'gameContainer',
-    backgroundColor: GameConfig.COLORS.BACKGROUND,
-    scene: TowerDefenseGame,
-    physics: {
-        default: 'arcade'
-    }
+const createGame = (mapConfig) => {
+    const config = {
+        type: Phaser.AUTO,
+        width: GameConfig.GAME_WIDTH,
+        height: GameConfig.GAME_HEIGHT,
+        parent: 'gameContainer',
+        backgroundColor: GameConfig.COLORS.BACKGROUND,
+        scene: [new TowerDefenseGame(mapConfig)],
+        physics: {
+            default: 'arcade'
+        }
+    };
+    return new Phaser.Game(config);
 };
 
-const game = new Phaser.Game(config);
+export { createGame };

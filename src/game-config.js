@@ -231,7 +231,7 @@ const GameConfig = {
     // Map configuration
     MAPS: {
         default: './maps/default-map.js',
-        spiral: './maps/spiral-map.js'
+        zigzag: './maps/zigzag-map.js'
     },
     
     // Asset paths

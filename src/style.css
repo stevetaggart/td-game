@@ -88,6 +88,128 @@ button:focus-visible {
   display: block;
 }
 
+#mapSelector {
+  max-width: 720px;
+  margin: 40px auto 20px;
+  padding: 24px 28px;
+  background: rgba(20, 24, 32, 0.9);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+#mapSelector h2 {
+  margin: 0 0 16px;
+  font-size: 28px;
+}
+
+#mapSelect {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #111827;
+  color: #fff;
+  font-size: 16px;
+}
+
+.map-description {
+  margin: 12px 0 18px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.map-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.map-actions button.primary,
+.editor-controls button.primary {
+  background: #2ecc71;
+  color: #0b1a10;
+  border: none;
+}
+
+.map-hint {
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+#mapSelector.is-hidden {
+  display: none;
+}
+
+#mapEditorOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 12, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10;
+}
+
+#mapEditorOverlay.is-visible {
+  display: flex;
+}
+
+.editor-panel {
+  background: #111827;
+  border-radius: 16px;
+  padding: 20px 24px 24px;
+  width: min(96vw, 1280px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.editor-panel h2 {
+  margin: 0 0 8px;
+  font-size: 26px;
+}
+
+.editor-instructions {
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.editor-panel input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #0b1220;
+  color: #fff;
+  font-size: 14px;
+}
+
+.editor-canvas {
+  width: 100%;
+  max-height: 520px;
+  background: #0f172a;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.editor-status {
+  margin: 6px 0 12px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.editor-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
